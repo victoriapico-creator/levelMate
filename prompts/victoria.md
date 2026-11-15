@@ -62,4 +62,35 @@ The form works. One thing I do not like: "Name is required" appears as soon as t
   Limits: Only touch CameraScreen.kt, the new file PhotoStorage.kt and the one permission line in AndroidManifest.xml. Do not change AppNavGraph.kt, any version or any plugin.
   Done when: I open Camera on the emulator, the permission dialog appears, I allow it and see the preview. I tap the shutter and see the message with the file name. I deny the permission and see the explanation with both buttons.
 
-- **What happened:** (a rellenar después)
+- **What happened:**
+- **Files touched:** ui/screens/CameraScreen.kt (modified), ui/camera/PhotoStorage.kt (new), AndroidManifest.xml (CAMERA permission line only)
+- **Result:** Accepted as proposed (commit message: VP-03 Camera with permission).
+- **How I checked it:**
+  - What the AI ran: [confirma: Gemini only created and edited the files; it did not build or run the app on the emulator]
+  - What I checked myself: git status showed only CameraScreen.kt, PhotoStorage.kt and AndroidManifest.xml, and git diff of the manifest showed only the CAMERA permission line. On the emulator the permission dialog appeared, I allowed it and saw the live preview. I tapped the shutter and saw the message with the file name. In Device Explorer the .jpg was in files/notes/general/. With the permission denied, the screen showed the explanation with the two buttons (ask again and open settings). I rotated the emulator and the camera kept working.
+
+## VP-04
+
+- **Date and time:** 2026-11-15 13:35
+- **Author:** Victoria
+- **Tool:** Gemini Agent (Gemini 3.6 Flash), new chat
+- **Files touched:** (a rellenar después)
+- **Result:** (a rellenar después)
+- **How I checked it:**
+  - What the AI ran: (a rellenar)
+  - What I checked myself: (a rellenar)
+- **Prompt:**
+
+  Context: Compose app called LevelMate. CameraScreen.kt in ui/screens/ shows the CameraX preview and a shutter button. Photo saving is in ui/camera/PhotoStorage.kt and must keep working.
+  Task: Add a level over the camera preview, using the accelerometer. Create a new file ui/camera/LevelCalculator.kt with plain Kotlin functions, with no Android code, that turn the accelerometer x and y values into a tilt angle in degrees, apply a simple low-pass smoothing, and say whether the angle is within a tolerance. Create a new file ui/camera/LevelIndicator.kt with a composable that shows the angle (for example "2.3°") and a bar or line that tilts with the phone. It is green when the phone is straight and orange when it is not. In CameraScreen.kt, read the accelerometer with SensorManager, register the listener when the screen is shown and unregister it when it leaves, and show the indicator over the preview without covering the shutter button.
+  Facts: With the phone upright in portrait, the accelerometer gives x close to 0 and y close to 9.8. The tilt angle in degrees is atan2(x, y) converted from radians. The tolerance is a constant of 1.5 degrees, defined in one place. If the phone has no accelerometer, show a short message "Level not available on this device" instead of the indicator and keep the camera working.
+  Limits: Only touch CameraScreen.kt and the two new files. Do not change PhotoStorage.kt, AppNavGraph.kt, any version or any plugin.
+  Done when: On the emulator, I open Camera and move the virtual phone in the extended controls (Virtual sensors). The angle changes and the indicator tilts. It is green within 1.5 degrees and orange outside. I can still take a photo.
+
+- **What happened:**
+- **Files touched:** ui/screens/CameraScreen.kt (modified), ui/camera/LevelCalculator.kt (new), ui/camera/LevelIndicator.kt (new)
+- **Result:** Accepted as proposed (commit message: VP-04 Level with accelerometer).
+- **How I checked it:**
+  - What the AI ran: [confirma: Gemini only created and edited the files; it did not run the app on the emulator]
+  - What I checked myself: git status showed only those three files. On the emulator I opened Camera and moved the virtual phone in Virtual sensors, Device pose. The angle changed and the indicator tilted. It was green when the phone was straight and orange when it was tilted. I could still take a photo, and leaving and re-entering Camera did not crash.
+- **What happened:** It worked on the first try, with no changes by hand.
