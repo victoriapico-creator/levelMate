@@ -94,3 +94,23 @@ The form works. One thing I do not like: "Name is required" appears as soon as t
   - What the AI ran: [confirma: Gemini only created and edited the files; it did not run the app on the emulator]
   - What I checked myself: git status showed only those three files. On the emulator I opened Camera and moved the virtual phone in Virtual sensors, Device pose. The angle changed and the indicator tilted. It was green when the phone was straight and orange when it was tilted. I could still take a photo, and leaving and re-entering Camera did not crash.
 - **What happened:** It worked on the first try, with no changes by hand.
+
+## VP-05
+
+- **Date and time:** 2026-11-15 13:50
+- **Author:** Victoria
+- **Tool:** Gemini Agent (Gemini 3.6 Flash), new chat
+- **Files touched:** (a rellenar después)
+- **Result:** (a rellenar después)
+- **How I checked it:**
+  - What the AI ran: (a rellenar)
+  - What I checked myself: (a rellenar)
+- **Prompt:**
+
+  Context: Compose app called LevelMate. CameraScreen.kt in ui/screens/ shows the CameraX preview, the shutter button and the level. Saving photos is in ui/camera/PhotoStorage.kt and must keep working. The ML Kit Text Recognition library is already in the project dependencies.
+  Task: Add a Scan button next to the shutter button in CameraScreen.kt. Tapping it takes a photo, saves it with the existing PhotoStorage code, reads the text in that photo with ML Kit Text Recognition and shows the result in a bottom sheet. Create a new file ui/camera/TextScanner.kt that calls ML Kit and returns the recognized lines with the confidence of each one. Create a new file ui/camera/RecognizedTextFilter.kt with plain Kotlin functions, with no Android code, that keep only the lines whose confidence is at or above the threshold. Create a new file ui/camera/ScanResultSheet.kt with the composable that lists the kept lines, one per row.
+  Facts: Use the bundled library already in the version catalog as libs.text.recognition (com.google.mlkit:text-recognition 16.0.1). Do not swap it for play-services-mlkit-text-recognition, because with an older Google Play services the confidence comes back as 0. Confidence is a number between 0 and 1. The threshold is a constant of 0.7, defined in one place. Cases to handle without crashing: no text found, show "No text found. Try again with more light."; text found but all below the threshold, show "The text is not clear enough. Try again."; ML Kit fails, show "Could not read the photo.". If libs.text.recognition is not wired in app/build.gradle.kts, say so and stop, without editing build files.
+  Limits: Only touch CameraScreen.kt and the three new files. Do not change PhotoStorage.kt, AppNavGraph.kt, any version or any plugin, and do not add libraries.
+  Done when: On the emulator I point the camera at a sheet with printed text, tap Scan and see the sheet with the recognized lines. With a scene with no text I see the "No text found" message. The shutter button and the level still work.
+
+- **What happened:** (a rellenar después)
