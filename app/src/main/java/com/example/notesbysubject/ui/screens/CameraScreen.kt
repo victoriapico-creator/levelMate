@@ -4,6 +4,10 @@ import android.Manifest
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
 import android.net.Uri
 import android.provider.Settings
 import android.widget.Toast
@@ -27,14 +31,17 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -47,7 +54,11 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import com.example.notesbysubject.ui.camera.LevelIndicator
 import com.example.notesbysubject.ui.camera.PhotoStorage
+import com.example.notesbysubject.ui.camera.applyLowPassFilter
+import com.example.notesbysubject.ui.camera.calculateTiltAngle
+import com.example.notesbysubject.ui.camera.isWithinTolerance
 
 @Composable
 fun CameraScreen(
@@ -109,6 +120,55 @@ private fun CameraPreviewContent(
     val imageCapture = remember { ImageCapture.Builder().build() }
     var savedMessage by remember { mutableStateOf<String?>(null) }
 
+    val sensorManager = remember {
+        context.getSystemService(Context.SENSOR_SERVICE) as? SensorManager
+    }
+    val accelerometer = remember(sensorManager) {
+        sensorManager?.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
+    }
+
+    var currentAngle by remember { mutableFloatStateOf(0f) }
+    var isLevel by remember { mutableStateOf(true) }
+
+    DisposableEffect(sensorManager, accelerometer) {
+        if (sensorManager == null || accelerometer == null) {
+            onDispose { }
+        } else {
+            var smoothedAngle = 0f
+            var isFirstReading = true
+
+            val listener = object : SensorEventListener {
+                override fun onSensorChanged(event: SensorEvent?) {
+                    if (event?.sensor?.type == Sensor.TYPE_ACCELEROMETER) {
+                        val x = event.values[0]
+                        val y = event.values[1]
+                        val rawAngle = calculateTiltAngle(x, y)
+                        if (isFirstReading) {
+                            smoothedAngle = rawAngle
+                            isFirstReading = false
+                        } else {
+                            smoothedAngle = applyLowPassFilter(rawAngle, smoothedAngle)
+                        }
+                        currentAngle = smoothedAngle
+                        isLevel = isWithinTolerance(smoothedAngle)
+                    }
+                }
+
+                override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
+            }
+
+            sensorManager.registerListener(
+                listener,
+                accelerometer,
+                SensorManager.SENSOR_DELAY_UI
+            )
+
+            onDispose {
+                sensorManager.unregisterListener(listener)
+            }
+        }
+    }
+
     Box(modifier = modifier.fillMaxSize()) {
         AndroidView(
             factory = { ctx ->
@@ -136,6 +196,31 @@ private fun CameraPreviewContent(
             },
             modifier = Modifier.fillMaxSize()
         )
+
+        // Level Indicator or missing accelerometer message over camera preview
+        if (accelerometer != null) {
+            LevelIndicator(
+                angleDegrees = currentAngle,
+                isLevel = isLevel,
+                modifier = Modifier.align(Alignment.Center)
+            )
+        } else {
+            Box(
+                modifier = Modifier
+                    .align(Alignment.Center)
+                    .background(
+                        color = Color.Black.copy(alpha = 0.6f),
+                        shape = RoundedCornerShape(8.dp)
+                    )
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
+            ) {
+                Text(
+                    text = "Level not available on this device",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Color.White
+                )
+            }
+        }
 
         // Shutter Button
         IconButton(
