@@ -62,7 +62,12 @@ The form works. One thing I do not like: "Name is required" appears as soon as t
   Limits: Only touch CameraScreen.kt, the new file PhotoStorage.kt and the one permission line in AndroidManifest.xml. Do not change AppNavGraph.kt, any version or any plugin.
   Done when: I open Camera on the emulator, the permission dialog appears, I allow it and see the preview. I tap the shutter and see the message with the file name. I deny the permission and see the explanation with both buttons.
 
-- **What happened:** (a rellenar después)
+- **What happened:**
+- **Files touched:** ui/screens/CameraScreen.kt (modified), ui/camera/PhotoStorage.kt (new), AndroidManifest.xml (CAMERA permission line only)
+- **Result:** Accepted as proposed (commit message: VP-03 Camera with permission).
+- **How I checked it:**
+  - What the AI ran: [confirma: Gemini only created and edited the files; it did not build or run the app on the emulator]
+  - What I checked myself: git status showed only CameraScreen.kt, PhotoStorage.kt and AndroidManifest.xml, and git diff of the manifest showed only the CAMERA permission line. On the emulator the permission dialog appeared, I allowed it and saw the live preview. I tapped the shutter and saw the message with the file name. In Device Explorer the .jpg was in files/notes/general/. With the permission denied, the screen showed the explanation with the two buttons (ask again and open settings). I rotated the emulator and the camera kept working.
 
 ## VP-04
 
