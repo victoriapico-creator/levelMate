@@ -41,4 +41,25 @@ What happened: si no hubo fallos, escribe que salió a la primera. Si echaste en
   Limits: Only touch ProjectFormScreen.kt and the two new files. Do not change AppNavGraph.kt, any version or any plugin. Use the theme's colours.
   Done when: I open the form, type a name and rotate the emulator, and the text is still there. With an empty name, or a deadline like 31/02/2026 or "abc", I see an error under the field and Save is disabled. With a valid name and an empty or valid deadline, Save is enabled.
 
-- **What happened:** (a rellenar)
+- **What happened:**
+The form works. One thing I do not like: "Name is required" appears as soon as the form opens, before the user has typed anything. [añade aquí cualquier otro fallo o arreglo a mano]. The push was rejected again because my teammate had pushed; I fixed it with git pull and push.
+
+## VP-03
+
+- **Date and time:** 2026-11-15 13:20
+- **Author:** Victoria
+- **Tool:** Gemini Agent (Gemini 3.6 Flash), new chat
+- **Files touched:** (a rellenar después)
+- **Result:** (a rellenar después)
+- **How I checked it:**
+  - What the AI ran: (a rellenar)
+  - What I checked myself: (a rellenar)
+- **Prompt:**
+
+  Context: Compose app called LevelMate. CameraScreen.kt in ui/screens/ is an empty screen that only shows its name. Navigation is in ui/navigation/AppNavGraph.kt. CameraX is already in the project dependencies. AndroidManifest.xml has no camera permission yet.
+  Task: Build the camera screen in CameraScreen.kt. Add the CAMERA permission to AndroidManifest.xml. When the screen opens, ask for the permission if it is not granted. With the permission, show the CameraX live preview and a shutter button. Tapping the shutter takes a photo and saves it as a JPEG in filesDir/notes/general/, with the file name photo_yyyyMMdd_HHmmss.jpg, creating the folder if it does not exist. After saving, show a short message with the file name. If the permission is denied, show a text that explains why the camera is needed, a button to ask again and a button that opens the app's settings. Put the file-saving logic in a new file ui/camera/PhotoStorage.kt, not inside the composable.
+  Facts: filesDir/notes/ is the only folder the project's FileProvider exposes, so photos must live there. Use the CameraX libraries already in the catalog and do not add libraries. The emulator is Android 17, API 37.
+  Limits: Only touch CameraScreen.kt, the new file PhotoStorage.kt and the one permission line in AndroidManifest.xml. Do not change AppNavGraph.kt, any version or any plugin.
+  Done when: I open Camera on the emulator, the permission dialog appears, I allow it and see the preview. I tap the shutter and see the message with the file name. I deny the permission and see the explanation with both buttons.
+
+- **What happened:** (a rellenar después)
