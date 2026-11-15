@@ -87,4 +87,10 @@ The form works. One thing I do not like: "Name is required" appears as soon as t
   Limits: Only touch CameraScreen.kt and the two new files. Do not change PhotoStorage.kt, AppNavGraph.kt, any version or any plugin.
   Done when: On the emulator, I open Camera and move the virtual phone in the extended controls (Virtual sensors). The angle changes and the indicator tilts. It is green within 1.5 degrees and orange outside. I can still take a photo.
 
-- **What happened:** (a rellenar después)
+- **What happened:**
+- **Files touched:** ui/screens/CameraScreen.kt (modified), ui/camera/LevelCalculator.kt (new), ui/camera/LevelIndicator.kt (new)
+- **Result:** Accepted as proposed (commit message: VP-04 Level with accelerometer).
+- **How I checked it:**
+  - What the AI ran: [confirma: Gemini only created and edited the files; it did not run the app on the emulator]
+  - What I checked myself: git status showed only those three files. On the emulator I opened Camera and moved the virtual phone in Virtual sensors, Device pose. The angle changed and the indicator tilted. It was green when the phone was straight and orange when it was tilted. I could still take a photo, and leaving and re-entering Camera did not crash.
+- **What happened:** It worked on the first try, with no changes by hand.
