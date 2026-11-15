@@ -24,6 +24,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -44,6 +45,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -56,9 +58,14 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.example.notesbysubject.ui.camera.LevelIndicator
 import com.example.notesbysubject.ui.camera.PhotoStorage
+import com.example.notesbysubject.ui.camera.ScanResultSheet
+import com.example.notesbysubject.ui.camera.ScanState
+import com.example.notesbysubject.ui.camera.TextScanner
 import com.example.notesbysubject.ui.camera.applyLowPassFilter
 import com.example.notesbysubject.ui.camera.calculateTiltAngle
+import com.example.notesbysubject.ui.camera.filterRecognizedLines
 import com.example.notesbysubject.ui.camera.isWithinTolerance
+import kotlinx.coroutines.launch
 
 @Composable
 fun CameraScreen(
@@ -119,6 +126,8 @@ private fun CameraPreviewContent(
 ) {
     val imageCapture = remember { ImageCapture.Builder().build() }
     var savedMessage by remember { mutableStateOf<String?>(null) }
+    var scanState by remember { mutableStateOf<ScanState?>(null) }
+    val scope = rememberCoroutineScope()
 
     val sensorManager = remember {
         context.getSystemService(Context.SENSOR_SERVICE) as? SensorManager
@@ -222,43 +231,100 @@ private fun CameraPreviewContent(
             }
         }
 
-        // Shutter Button
-        IconButton(
-            onClick = {
-                val photoFile = PhotoStorage.createPhotoFile(context)
-                val outputOptions = PhotoStorage.createOutputFileOptions(photoFile)
-                imageCapture.takePicture(
-                    outputOptions,
-                    ContextCompat.getMainExecutor(context),
-                    object : ImageCapture.OnImageSavedCallback {
-                        override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
-                            val msg = "Saved ${photoFile.name}"
-                            savedMessage = msg
-                            Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
-                        }
-
-                        override fun onError(exception: ImageCaptureException) {
-                            Toast.makeText(
-                                context,
-                                "Error taking photo: ${exception.message}",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                        }
-                    }
-                )
-            },
+        // Shutter Button & Scan Button Controls
+        Row(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
-                .padding(bottom = 32.dp)
-                .size(72.dp)
-                .background(Color.White, shape = CircleShape)
-                .border(4.dp, MaterialTheme.colorScheme.primary, CircleShape)
+                .padding(bottom = 32.dp),
+            horizontalArrangement = Arrangement.spacedBy(24.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Box(
+            // Shutter Button
+            IconButton(
+                onClick = {
+                    val photoFile = PhotoStorage.createPhotoFile(context)
+                    val outputOptions = PhotoStorage.createOutputFileOptions(photoFile)
+                    imageCapture.takePicture(
+                        outputOptions,
+                        ContextCompat.getMainExecutor(context),
+                        object : ImageCapture.OnImageSavedCallback {
+                            override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
+                                val msg = "Saved ${photoFile.name}"
+                                savedMessage = msg
+                                Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+                            }
+
+                            override fun onError(exception: ImageCaptureException) {
+                                Toast.makeText(
+                                    context,
+                                    "Error taking photo: ${exception.message}",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                        }
+                    )
+                },
                 modifier = Modifier
-                    .size(48.dp)
-                    .background(MaterialTheme.colorScheme.primary, shape = CircleShape)
-            )
+                    .size(72.dp)
+                    .background(Color.White, shape = CircleShape)
+                    .border(4.dp, MaterialTheme.colorScheme.primary, CircleShape)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(48.dp)
+                        .background(MaterialTheme.colorScheme.primary, shape = CircleShape)
+                )
+            }
+
+            // Scan Button
+            Button(
+                onClick = {
+                    scanState = ScanState.Loading
+                    val photoFile = PhotoStorage.createPhotoFile(context)
+                    val outputOptions = PhotoStorage.createOutputFileOptions(photoFile)
+                    imageCapture.takePicture(
+                        outputOptions,
+                        ContextCompat.getMainExecutor(context),
+                        object : ImageCapture.OnImageSavedCallback {
+                            override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
+                                val msg = "Saved ${photoFile.name}"
+                                savedMessage = msg
+                                Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+
+                                scope.launch {
+                                    try {
+                                        val rawLines = TextScanner.scanImage(context, photoFile)
+                                        if (rawLines.isEmpty()) {
+                                            scanState = ScanState.NoTextFound
+                                        } else {
+                                            val filteredLines = filterRecognizedLines(rawLines)
+                                            if (filteredLines.isEmpty()) {
+                                                scanState = ScanState.TextBelowThreshold
+                                            } else {
+                                                scanState = ScanState.Success(filteredLines)
+                                            }
+                                        }
+                                    } catch (_: Exception) {
+                                        scanState = ScanState.Error
+                                    }
+                                }
+                            }
+
+                            override fun onError(exception: ImageCaptureException) {
+                                scanState = ScanState.Error
+                                Toast.makeText(
+                                    context,
+                                    "Error taking photo: ${exception.message}",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                        }
+                    )
+                },
+                modifier = Modifier.height(48.dp)
+            ) {
+                Text("Scan")
+            }
         }
 
         // Overlay message when photo is saved
@@ -279,6 +345,14 @@ private fun CameraPreviewContent(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
+        }
+
+        // Bottom Sheet for Scan Results
+        scanState?.let { state ->
+            ScanResultSheet(
+                state = state,
+                onDismiss = { scanState = null }
+            )
         }
     }
 }
