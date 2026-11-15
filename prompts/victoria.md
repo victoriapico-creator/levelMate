@@ -17,4 +17,8 @@
   Limits: Only touch the new files, MainActivity.kt and ui/theme/. Do not change any version or add any plugin.
   Done when: I run the app, see Projects, can open every other screen with Back returning to Projects, and the colours are not the template's purple in either theme.
 
-- **What happened:** (a rellenar)
+- **What happened:**
+Files touched: AppNavGraph.kt, las seis pantallas, MainActivity.kt, Color.kt y Theme.kt.
+Result: aceptado tal cual (o con los cambios que hayas hecho).
+How I checked it: separa lo que hizo la IA de lo tuyo, por ejemplo: “git status mostraba solo los 10 archivos esperados; ejecuté la app, cada botón abre su pantalla y el Back del sistema vuelve a Projects; los colores son naranja y gris oscuro”.
+What happened: si no hubo fallos, escribe que salió a la primera. Si echaste en falta un botón de volver en pantalla, apúntalo.
