@@ -113,4 +113,10 @@ The form works. One thing I do not like: "Name is required" appears as soon as t
   Limits: Only touch CameraScreen.kt and the three new files. Do not change PhotoStorage.kt, AppNavGraph.kt, any version or any plugin, and do not add libraries.
   Done when: On the emulator I point the camera at a sheet with printed text, tap Scan and see the sheet with the recognized lines. With a scene with no text I see the "No text found" message. The shutter button and the level still work.
 
-- **What happened:** (a rellenar después)
+- **What happened:**
+- **Files touched:** ui/screens/CameraScreen.kt (modified), ui/camera/TextScanner.kt, ui/camera/RecognizedTextFilter.kt and ui/camera/ScanResultSheet.kt (new)
+- **Result:** Accepted as proposed (commit message: VP-05 Text scan with ML Kit).
+- **How I checked it:**
+  - What the AI ran: [confirma: Gemini only created and edited the files; it did not run the app on the emulator]
+  - What I checked myself: git status showed only those four files, with no change in build files or versions. On the emulator, with the virtual scene and no text, Scan showed "No text found. Try again with more light." and the app did not crash. After setting the back camera to Webcam0, I pointed it at printed text, tapped Scan and the sheet listed the recognized lines. [confirma: qué pasó con texto borroso o lejano, si lo probaste]. The shutter button and the level still work.
+- **What happened:** [confirma: it worked on the first try, with no changes by hand. Añade cualquier fallo real, por ejemplo si tuviste que configurar la webcam]
