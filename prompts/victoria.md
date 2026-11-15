@@ -22,3 +22,23 @@ Files touched: AppNavGraph.kt, las seis pantallas, MainActivity.kt, Color.kt y T
 Result: aceptado tal cual (o con los cambios que hayas hecho).
 How I checked it: separa lo que hizo la IA de lo tuyo, por ejemplo: “git status mostraba solo los 10 archivos esperados; ejecuté la app, cada botón abre su pantalla y el Back del sistema vuelve a Projects; los colores son naranja y gris oscuro”.
 What happened: si no hubo fallos, escribe que salió a la primera. Si echaste en falta un botón de volver en pantalla, apúntalo.
+
+## VP-02
+
+- **Date and time:** 2026-11-15 13:10
+- **Author:** Victoria
+- **Tool:** Gemini Agent, new chat
+- **Files touched:** (a rellenar después)
+- **Result:** (a rellenar después)
+- **How I checked it:**
+  - What the AI ran: (a rellenar)
+  - What I checked myself: (a rellenar)
+- **Prompt:**
+
+  Context: Compose app called LevelMate. ProjectFormScreen.kt in ui/screens/ is an empty screen that only shows its name. The navigation graph is in ui/navigation/AppNavGraph.kt and the theme is in ui/theme/.
+  Task: Build the project form in ProjectFormScreen.kt with three fields (name, description, deadline) and a Save button. Create a new file ui/components/ProjectFormFields.kt with a stateless composable ProjectFormFields that receives each value, each error message and a callback per change, and draws the three fields with their error message under them. ProjectFormScreen owns the state with rememberSaveable and passes it down. Create a new file ui/screens/ProjectFormValidation.kt with plain Kotlin functions, with no Android code, that validate each field and return an error message or null.
+  Facts: Name is required, maximum 40 characters. Description is optional, maximum 200 characters. Deadline is optional, in the format dd/MM/yyyy, and must be a real date. If you parse it with java.time, catch DateTimeParseException or the app closes. Error messages are in English. Save is disabled until all fields are valid. For now Save does nothing, because the database does not exist yet.
+  Limits: Only touch ProjectFormScreen.kt and the two new files. Do not change AppNavGraph.kt, any version or any plugin. Use the theme's colours.
+  Done when: I open the form, type a name and rotate the emulator, and the text is still there. With an empty name, or a deadline like 31/02/2026 or "abc", I see an error under the field and Save is disabled. With a valid name and an empty or valid deadline, Save is enabled.
+
+- **What happened:** (a rellenar)
