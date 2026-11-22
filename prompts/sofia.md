@@ -60,6 +60,10 @@ Implementado: entidades y relaciones, consultas observables, operaciones suspend
 
 Preferencias de hora y tolerancia persistentes, validación de HH:mm y rango 0,1–15°, guardado atómico y tolerancia aplicada a la cámara. Se conserva 1,5° como valor inicial. Caso incómodo: 25:70, NaN o tolerancia fuera del rango impiden guardar. Inicio de la aplicación importa las fotos previas sin duplicarlas.
 
+#### A5 · Retrofit
+
+Catálogo propio en docs/templates.json y copia idéntica en assets/recorded/project_templates.json. Una constante elige red o grabación, con el mismo Json(ignoreUnknownKeys=true) en ambos caminos y el httpClient del esqueleto. El modo de entrega es grabado. La URL real apunta a la rama de esta entrega. Caso incómodo: sin red, error HTTP o versión/formato inválido usan la grabación y se identifican como fallback. Se añadieron pruebas de esos caminos y de cancelación; ejecución de Gradle pendiente por red.
+
 ## SH-02 · Aclaraciones y desbloqueo
 
 - **Date and time:** 2026-11-22; horas de los mensajes no disponibles en la interfaz; anotados en orden al recuperar el código, a las 21:56 Europe/Madrid.

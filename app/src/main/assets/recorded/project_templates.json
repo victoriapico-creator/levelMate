@@ -1,0 +1,35 @@
+{
+  "note": "LevelMate workshop templates. Materials include units. Steps can be adapted to your project.",
+  "version": 1,
+  "templates": [
+    {
+      "id": "floating-shelf",
+      "name": "Floating shelf",
+      "description": "Plan, measure and install a small shelf. Choose suitable anchors for your wall and check for cables before drilling.",
+      "materials": [
+        {"name": "Wooden shelf", "quantity": "1 board"},
+        {"name": "Brackets", "quantity": "2 pieces"},
+        {"name": "Wall anchors and screws", "quantity": "According to wall and load"}
+      ],
+      "steps": ["Measure and mark the height.", "Check the marks with the level.", "Fit the brackets and shelf following their instructions.", "Check stability and take a final photo."]
+    },
+    {
+      "id": "painted-frame",
+      "name": "Paint a picture frame",
+      "description": "Refresh an old frame and record the result.",
+      "materials": [
+        {"name": "Picture frame", "quantity": "1 piece"},
+        {"name": "Paint suitable for the frame", "quantity": "1 small tin"},
+        {"name": "Brush", "quantity": "1 piece"}
+      ],
+      "steps": ["Remove the backing and clean the frame.", "Prepare the surface as directed by the paint manufacturer.", "Paint and allow to dry.", "Reassemble and photograph the frame."]
+    },
+    {
+      "id": "blank-workshop",
+      "name": "My workshop project",
+      "description": "A starting point for your own idea. Add materials and steps in the project detail.",
+      "materials": [],
+      "steps": []
+    }
+  ]
+}

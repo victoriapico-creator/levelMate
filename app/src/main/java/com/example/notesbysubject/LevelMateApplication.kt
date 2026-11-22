@@ -5,6 +5,7 @@ import android.content.Context
 import com.example.notesbysubject.data.local.LevelMateDatabase
 import com.example.notesbysubject.data.local.ProjectRepository
 import com.example.notesbysubject.data.settings.SettingsRepository
+import com.example.notesbysubject.data.templates.TemplateRepository
 import java.io.File
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -25,6 +26,7 @@ class AppContainer(context: Context) {
     val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     val projects = ProjectRepository(LevelMateDatabase.getInstance(context))
     val settings = SettingsRepository(context)
+    val templates = TemplateRepository.create(context.applicationContext)
     val notesDirectory = File(context.filesDir, "notes")
     val photoImportError = MutableStateFlow<String?>(null)
 
