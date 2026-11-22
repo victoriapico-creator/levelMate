@@ -72,6 +72,10 @@ Lista y detalle conectados a Room; creación y edición, materiales con unidades
 
 Trabajo periódico único con retraso inicial hasta la hora local elegida, canal y permiso de notificaciones en Android 13+, activación y cancelación desde ajustes. No se duplica al abrir la app. Consulta Room para proyectos vencidos con pasos pendientes; sin proyectos o con permiso denegado termina sin notificar. Cambiar hora/zona reprograma el recordatorio. WorkManager no garantiza una hora exacta. Se añadieron pruebas del cálculo horario, incluido el cambio de hora de Madrid.
 
+#### A6 · Login y Firestore
+
+Login y alta por email con contraseña mantenida sólo en memoria y borrada del campo al enviar. Copias de proyectos compartidas por UID, escucha con retirada de listeners, caché identificada, importación a Room, actualización y revocación sólo por el propietario. Se excluyen fotos y rutas locales del payload. Reglas de producción con denegación por defecto y comprobaciones de pertenencia, propietario y campos. Pruebas unitarias de payload inválido y sin fotos; script de 10 comprobaciones contra el emulador de Firestore. Caso incómodo: sin configuración, sin sesión, sin red, datos remotos corruptos y lector intentando modificar. No se añadieron plugins ni se cambiaron versiones: el plugin Google Services ya declarado se activa de forma condicional al existir el archivo real de configuración. Crear Spark, habilitar Authentication y publicar reglas requiere acceso a Firebase; queda pendiente si la conexión no llega durante el trabajo.
+
 ## SH-02 · Aclaraciones y desbloqueo
 
 - **Date and time:** 2026-11-22; horas de los mensajes no disponibles en la interfaz; anotados en orden al recuperar el código, a las 21:56 Europe/Madrid.

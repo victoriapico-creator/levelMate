@@ -59,7 +59,7 @@ fun AppNavGraph(
             SettingsScreen()
         }
         composable("shared") {
-            SharedScreen()
+            SharedScreen(onProjectImported = { id -> navController.navigate("projectDetail/$id") })
         }
     }
 }
