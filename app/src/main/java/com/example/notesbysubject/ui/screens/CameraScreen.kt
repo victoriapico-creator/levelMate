@@ -56,6 +56,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.example.notesbysubject.ui.camera.LevelIndicator
 import com.example.notesbysubject.appContainer
@@ -94,6 +96,16 @@ fun CameraScreen(
         contract = ActivityResultContracts.RequestPermission()
     ) { isGranted ->
         hasPermission = isGranted
+    }
+
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                hasPermission = ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
 
     LaunchedEffect(Unit) {
@@ -150,7 +162,7 @@ private fun CameraPreviewContent(
     val settings by context.appContainer.settings.settings.collectAsState(initial = AppSettings())
     val isLevel = isWithinTolerance(currentAngle, settings.levelTolerance)
 
-    DisposableEffect(sensorManager, accelerometer) {
+    DisposableEffect(sensorManager, accelerometer, lifecycleOwner) {
         if (sensorManager == null || accelerometer == null) {
             onDispose { }
         } else {
@@ -176,13 +188,24 @@ private fun CameraPreviewContent(
                 override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
             }
 
-            sensorManager.registerListener(
-                listener,
-                accelerometer,
-                SensorManager.SENSOR_DELAY_UI
-            )
-
+            var registered = false
+            fun register() {
+                if (!registered) {
+                    sensorManager.registerListener(listener, accelerometer, SensorManager.SENSOR_DELAY_UI)
+                    registered = true
+                }
+            }
+            val observer = LifecycleEventObserver { _, event ->
+                when (event) {
+                    Lifecycle.Event.ON_RESUME -> register()
+                    Lifecycle.Event.ON_PAUSE -> { sensorManager.unregisterListener(listener); registered = false }
+                    else -> Unit
+                }
+            }
+            lifecycleOwner.lifecycle.addObserver(observer)
+            if (lifecycleOwner.lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) register()
             onDispose {
+                lifecycleOwner.lifecycle.removeObserver(observer)
                 sensorManager.unregisterListener(listener)
             }
         }

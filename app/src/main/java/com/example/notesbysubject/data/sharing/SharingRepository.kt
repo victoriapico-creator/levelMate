@@ -19,6 +19,7 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withTimeout
 
 data class SharedListState(
+    val viewerUid: String? = null,
     val projects: List<SharedProject> = emptyList(),
     val loading: Boolean = false,
     val fromCache: Boolean = false,
@@ -53,20 +54,20 @@ class SharingRepository(context: Context) {
 
     fun observeShared(uid: String): Flow<SharedListState> = callbackFlow {
         val database = firestore
-        if (database == null) { trySend(SharedListState(error = "Project sharing is not available yet.")); close(); return@callbackFlow }
-        trySend(SharedListState(loading = true))
+        if (database == null) { trySend(SharedListState(viewerUid = uid, error = "Project sharing is not available yet.")); close(); return@callbackFlow }
+        trySend(SharedListState(viewerUid = uid, loading = true))
         val listener = database.collection("sharedProjects").whereArrayContains("memberUids", uid)
             .addSnapshotListener(MetadataChanges.INCLUDE) { snapshot, error ->
                 if (error != null || snapshot == null) {
-                    trySend(SharedListState(error = "Could not load shared projects. Check your connection and try again."))
+                    trySend(SharedListState(viewerUid = uid, error = "Could not load shared projects. Check your connection and try again."))
                 } else {
                     var invalid = false
                     val projects = snapshot.documents.mapNotNull { document ->
-                        try { parseSharedProject(document.id, document.data ?: emptyMap()) }
+                        try { parseSharedProject(document.id, document.data ?: emptyMap()).takeIf { uid in it.memberUids } }
                         catch (_: Exception) { invalid = true; null }
                     }.sortedBy { it.name.lowercase() }
                     trySend(SharedListState(
-                        projects = projects, fromCache = snapshot.metadata.isFromCache,
+                        viewerUid = uid, projects = projects, fromCache = snapshot.metadata.isFromCache,
                         error = if (invalid) "Some shared projects contain invalid data and could not be opened." else null
                     ))
                 }

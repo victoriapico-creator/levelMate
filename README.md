@@ -1,47 +1,78 @@
-# Notes by Subject
+# LevelMate
 
-Group project, app 1. With your timetable saved, every photo of the board or of your notes goes to the folder of the subject you have at that time.
+App Android de proyectos de taller, con Jetpack Compose, Room, DataStore, CameraX y Firebase. Paquete: `com.example.notesbysubject`.
 
-This README is yours. Fill it in as you go: it is part of your submission, and the rubric marks it. If this README and the rubric ever disagree, the rubric wins. How to open the project, what the skeleton already does and a route to build the app are in the skeleton's guide, `MAI_SAP_Skeleton_App1_NotesBySubject.docx`.
+## Cómo ejecutarla
 
-## How to run it
+1. Abre el repositorio en Android Studio y sincroniza Gradle usando las versiones del repositorio. El proyecto requiere SDK 37 y la JVM 25 indicada en `gradle/gradle-daemon-jvm.properties`. No aceptes propuestas de actualización de versiones o plugins.
+2. Ejecuta `app` en Android 8/API 26 o superior. Para probar permisos de notificación usa Android 13/API 33 o superior. Cámara y nivel se prueban mejor en un teléfono.
+3. En Projects pulsa **New project**, rellena el formulario y guarda. El detalle permite editar, añadir materiales con unidades, marcar pasos y tomar o adjuntar fotos. **General photos** reúne fotos sin proyecto y recupera las guardadas antes de incorporar Room.
+4. En **Settings** guarda la hora `HH:mm`, la tolerancia de 0,1 a 15 grados y, si quieres, activa el recordatorio. Se pide permiso para notificar. Android puede retrasar la ejecución.
+5. **Shared projects** necesita la configuración Firebase de la sección siguiente. Las funciones locales no requieren una cuenta.
 
-Write what someone needs to run your app from a fresh copy of the repository, besides the steps in the skeleton's guide. For example: how to create an account in the app, or what to tap first. Never write a password here or anywhere else in the repository.
+## Firebase: estado y configuración pendiente
 
-## Real call or recorded file (A5)
+El login, las copias compartidas y las reglas están implementados. **No se ha creado aún el proyecto remoto ni se ha descargado `app/google-services.json`: hace falta conectar la cuenta Firebase.** No hay una configuración ficticia ni un proyecto de pago.
 
-Say how to switch between the real call to the timetable and the recorded file, and which of the two the app uses as you submit it.
+Para completar la configuración con una cuenta autorizada:
 
-## Coverage table
+1. Crea un proyecto Firebase **Spark**, sin vincular facturación ni activar Blaze.
+2. Registra una aplicación Android con paquete `com.example.notesbysubject` y descarga su `google-services.json` a `app/google-services.json`. Es la configuración de cliente solicitada; no añadas cuentas de servicio, claves privadas ni credenciales de administración. El plugin Google Services ya presente en el proyecto se activa automáticamente sólo cuando existe ese archivo; sus versiones no cambian.
+3. Habilita Authentication, proveedor **Email/Password**. Las contraseñas se introducen exclusivamente en la app y no se guardan en el repositorio ni en el logbook.
+4. Crea Cloud Firestore en **modo producción**. Publica el archivo `firestore.rules` de este repositorio, por ejemplo con `firebase deploy --only firestore:rules --project TU_PROJECT_ID`. No uses reglas de modo test.
+5. Ejecuta de nuevo la app, crea dos cuentas desde Shared projects y copia el UID de la segunda. Desde la primera, selecciona un proyecto y comparte con ese UID. La segunda verá la copia. Sólo el propietario puede publicar actualizaciones o retirarla; los lectores pueden importarla como un proyecto local independiente.
 
-One row for each row of block A. A row that is not in this table scores 0.
+No se suben fotos ni rutas de archivos a Firestore, y no se usa Firebase Storage. Si se retira una copia compartida, las copias locales ya importadas siguen existiendo. Para actualizar una copia compartida, su propietario vuelve a pulsar Share / update shared copy. Cada copia admite hasta 10 participantes. Los UID se intercambian con la otra persona, no son contraseñas.
 
-| Row | Feature | Files | Screen |
-|---|---|---|---|
-| A1 | | | |
-| A2 | | | |
-| A3 | | | |
-| A4 | | | |
-| A5 | | | |
-| A6 | | | |
-| A7 | | | |
-| A8 | | | |
-| A9 | | | |
-| A10 | | | |
+## Llamada real o grabada (A5)
 
-## Design decisions
+En `data/templates/TemplateRepository.kt`, cambia únicamente:
 
-Three decisions you took, each with its reason.
+```kotlin
+const val USE_RECORDED_TEMPLATES = true
+```
 
-1.
-2.
-3.
+- `true`: usa `app/src/main/assets/recorded/project_templates.json`. Es el **modo de entrega**.
+- `false`: tras subir la rama, Retrofit descarga el JSON de [esta URL](https://raw.githubusercontent.com/victoriapico-creator/levelMate/codex/levelmate-complete/docs/templates.json). Si la red, HTTP, JSON o versión fallan, muestra la copia grabada con un aviso. GitHub rechazó publicar la rama desde esta conexión (403), por lo que esta URL aún está pendiente de publicación. La URL estará disponible mientras exista esta rama; al integrarla en main puede apuntarse la ruta de `TemplateApi` a main.
+
+La copia publicada y la grabada son idénticas. El catálogo admite materiales o pasos vacíos. Un formato no compatible se rechaza. El mismo `Json { ignoreUnknownKeys = true }` se utiliza en Retrofit y en assets. Las peticiones usan el `httpClient` original y su User-Agent.
+
+## Tabla de cobertura
+
+| Fila | Función | Archivos principales | Pantalla | Caso incómodo |
+|---|---|---|---|---|
+| A1 | Navegación y tema ya existentes; conexiones de datos añadidas | `ui/navigation/AppNavGraph.kt`, `ui/theme/` | Todas | Ruta de proyecto inexistente muestra Project not found |
+| A2 | Lista, detalle, edición y envío de una foto por intent | `ui/screens/ProjectsScreen.kt`, `ProjectDetailScreen.kt`, `ui/photos/` | Projects, ProjectDetail | Lista vacía, archivo desaparecido o aplicación receptora ausente |
+| A3 | Hora, activación y tolerancia persistentes | `data/settings/`, `ui/screens/SettingsScreen.kt` | Settings, Camera | `25:70`, `NaN`, cero o tolerancia excesiva no se guardan |
+| A4 | Proyectos, materiales, pasos y fotos con relaciones y transacciones | `data/local/` | Projects, ProjectForm, ProjectDetail | Proyecto borrado, clave foránea inexistente, carga vacía y plantilla inválida |
+| A5 | Plantillas Retrofit con copia local; publicación remota pendiente del push | `data/templates/`, `assets/recorded/project_templates.json`, `docs/templates.json` | Projects | Sin red o JSON inválido usa la copia local; catálogo vacío tiene mensaje |
+| A6 | Login, alta, copias compartidas por UID y reglas de propietario; configuración remota pendiente | `data/sharing/`, `ui/SharingViewModel.kt`, `SharedScreen.kt`, `firestore.rules` | Shared | Sin configuración o sesión, sin red, lector sin permiso de escritura y datos corruptos |
+| A7 | Recordatorio diario único con notificación | `reminders/`, `SettingsScreen.kt`, `AndroidManifest.xml` | Settings, notificación | Permiso denegado o ningún proyecto vencido: no notifica; cambiar ajustes no duplica trabajos |
+| A8 | Cámara ya existente; asociación a Room añadida | `CameraScreen.kt`, `ui/camera/PhotoStorage.kt` | Camera, ProjectDetail | Permiso denegado, espacio insuficiente y capturas sin sobrescribir archivos |
+| A9 | Nivel existente con tolerancia de DataStore | `ui/camera/LevelCalculator.kt`, `LevelIndicator.kt`, `CameraScreen.kt` | Camera | Sin acelerómetro se conserva la cámara y aparece un aviso |
+| A10 | Escaneo de texto existente, conservado | `ui/camera/TextScanner.kt`, `RecognizedTextFilter.kt`, `ScanResultSheet.kt` | Camera | Sin texto, baja confianza o fallo del reconocimiento |
+
+## Decisiones de diseño
+
+1. Room guarda la fecha opcional como ISO `yyyy-MM-dd`; el formulario sigue usando `dd/MM/yyyy`. Las cantidades son texto para admitir unidades. Al borrar proyectos, materiales y pasos se borran en cascada y las fotos quedan como generales, con sus archivos intactos.
+2. Se comparten instantáneas por UID y con acceso de lectura para participantes. Sólo el propietario actualiza o revoca la copia. Evita que cambios en un proyecto local sobrescriban silenciosamente el trabajo de otras personas. Las fotos siguen siendo locales.
+3. Plantillas reales y grabadas usan el mismo formato y validaciones. La entrega funciona sin red y deja visible cuándo se ha utilizado la alternativa grabada.
+
+## Validación y pendientes
+
+Los resultados reales y el recorrido manual están en [docs/VALIDATION.md](docs/VALIDATION.md). El registro de prompts está en [prompts/sofia.md](prompts/sofia.md). No se han modificado `gradle/libs.versions.toml`, el wrapper ni las versiones/plugins del esqueleto. `HttpClient.kt` se conserva.
+
+```sh
+bash gradlew :app:testDebugUnitTest :app:assembleDebug :app:lintDebug
+bash gradlew :app:connectedDebugAndroidTest
+firebase emulators:exec --only firestore --project demo-levelmate "node scripts/check-firestore-rules.mjs"
+```
+
+Las pruebas instrumentadas requieren teléfono o emulador. El script de reglas se limita al emulador local y no se ejecuta contra producción.
 
 ## Release (C2)
 
-Which key signs your `.aab`, where you keep it outside the repository, and why Google Play does not accept the debug key.
-
-Sign it in Android Studio with **Build > Generate Signed Bundle/APK**, then **Android App Bundle**. The `.aab` that Gradle builds on its own in `app/build/outputs` is not signed, and an unsigned `.aab` scores 0 in C2.
+No se ha solicitado ni generado una release firmada ni una clave de firma. C2 queda pendiente. Las claves de firma deben mantenerse fuera del repositorio; Google Play no acepta una clave debug. En Android Studio usa **Build > Generate Signed Bundle/APK > Android App Bundle**.
 
 ## Facts you cannot guess
 

@@ -39,6 +39,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.notesbysubject.appContainer
 import com.example.notesbysubject.data.local.deadlineForForm
 import com.example.notesbysubject.data.sharing.SharedProject
+import com.example.notesbysubject.data.sharing.SharedListState
 import com.example.notesbysubject.ui.SharingViewModel
 import com.example.notesbysubject.ui.observeData
 
@@ -47,7 +48,8 @@ fun SharedScreen(modifier: Modifier = Modifier, onProjectImported: (Long) -> Uni
     val context = LocalContext.current
     val model: SharingViewModel = viewModel()
     val user by model.user.collectAsState()
-    val shared by model.sharedProjects.collectAsState()
+    val observedShared by model.sharedProjects.collectAsState()
+    val shared = if (observedShared.viewerUid == user?.uid) observedShared else SharedListState(loading = user != null)
     val localProjects by observeData(context.appContainer.projects.projects)
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }

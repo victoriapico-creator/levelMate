@@ -25,6 +25,10 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.runtime.remember
 import com.example.notesbysubject.reminders.ReminderScheduler
+import androidx.compose.runtime.DisposableEffect
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -58,6 +62,15 @@ private fun SettingsEditor(settings: AppSettings, modifier: Modifier) {
     val context = LocalContext.current
     val container = context.appContainer
     val scope = rememberCoroutineScope()
+    val lifecycleOwner = LocalLifecycleOwner.current
+    var notificationsAllowed by remember { mutableStateOf(NotificationManagerCompat.from(context).areNotificationsEnabled()) }
+    DisposableEffect(lifecycleOwner, context) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) notificationsAllowed = NotificationManagerCompat.from(context).areNotificationsEnabled()
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
     var time by rememberSaveable(settings.reminderHour, settings.reminderMinute) {
         mutableStateOf(String.format(Locale.ROOT, "%02d:%02d", settings.reminderHour, settings.reminderMinute))
     }
@@ -67,6 +80,7 @@ private fun SettingsEditor(settings: AppSettings, modifier: Modifier) {
     var remindersEnabled by rememberSaveable(settings.remindersEnabled) { mutableStateOf(settings.remindersEnabled) }
     val permissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
         remindersEnabled = granted
+        notificationsAllowed = NotificationManagerCompat.from(context).areNotificationsEnabled()
         if (!granted) message = "Notifications were denied. You can enable them in system settings."
     }
     val parsedTime = parseReminderTime(time)
@@ -96,7 +110,7 @@ private fun SettingsEditor(settings: AppSettings, modifier: Modifier) {
             } else { remindersEnabled = enabled }
         })
         Text("Android chooses the execution time, so reminders may arrive late. Only unfinished projects due today or earlier are included.")
-        if (!NotificationManagerCompat.from(context).areNotificationsEnabled()) {
+        if (!notificationsAllowed) {
             Text("Notifications are disabled in system settings.")
             OutlinedButton(onClick = {
                 context.startActivity(Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName))

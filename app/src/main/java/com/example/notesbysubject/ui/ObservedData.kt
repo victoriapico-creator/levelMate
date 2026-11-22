@@ -5,6 +5,7 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.produceState
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collect
 
 data class ObservedData<T>(val data: T? = null, val loading: Boolean = true, val error: String? = null)
 

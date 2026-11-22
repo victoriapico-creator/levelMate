@@ -13,6 +13,7 @@ class ReminderClockReceiver : BroadcastReceiver() {
         val pending = goAsync()
         context.appContainer.applicationScope.launch {
             try { ReminderScheduler.sync(context, context.appContainer.settings.settings.first(), replace = true) }
+            catch (_: Exception) { /* The next application launch retries scheduling. */ }
             finally { pending.finish() }
         }
     }

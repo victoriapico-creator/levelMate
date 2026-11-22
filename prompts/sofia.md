@@ -5,10 +5,10 @@
 - **Date and time:** 2026-11-22; la interfaz no conserva la hora del prompt original. Registro al obtener acceso al código: 21:56 Europe/Madrid.
 - **Author:** sofiahuch, con asistencia de Codex.
 - **Tool:** ChatGPT Codex, misma conversación; hubo varios intentos de acceso antes de implementar.
-- **Files touched:** se detallan por bloque en «What happened» y en los commits SH-01.
-- **Result:** en curso.
+- **Files touched:** data/local/, data/settings/, data/templates/, data/sharing/, reminders/, LevelMateApplication.kt, ui/screens/, ui/photos/, ui/ProjectActionsViewModel.kt, ui/SharingViewModel.kt, ui/ObservedData.kt, ui/camera/PhotoStorage.kt, ui/navigation/AppNavGraph.kt, AndroidManifest.xml, app/build.gradle.kts, strings.xml, icono de notificación, tests, reglas y configuración Firestore, README.md, docs/, .gitignore y este archivo. También constan en los commits SH-01.
+- **Result:** accepted with changes (entrega técnica de Codex; aceptación de la persona y revisión manual pendientes).
 - **How I checked it:**
-  - What the AI ran: clonación y `git pull --ff-only` (Already up to date). Intentó `bash gradlew :app:assembleDebug :app:testDebugUnitTest :app:lintDebug`; la descarga de Gradle falló con `Network is unreachable` antes de compilar. Se anotarán las demás comprobaciones reales al ejecutarlas.
+  - What the AI ran: clonación y `git pull --ff-only` (Already up to date). Intentó `bash gradlew :app:assembleDebug :app:testDebugUnitTest :app:lintDebug`; la descarga de Gradle falló con `Network is unreachable` antes de compilar. Después se resolvieron la descarga de Gradle y el SDK 37.0 sin cambiar las versiones del repositorio. :app:testDebugUnitTest pasó 21 pruebas; :app:assembleDebug, :app:lintDebug (0 errores) y :app:assembleDebugAndroidTest terminaron correctamente. El emulador Firestore pasó las 10 comprobaciones de scripts/check-firestore-rules.mjs. Las pruebas Android instrumentadas se compilaron, pero no se ejecutaron en dispositivo. Se validaron XML, JSON, igualdad de catálogos y conservación de versiones y HttpClient.kt.
   - What I checked myself: pendiente de revisión de la persona; no se atribuyen pruebas manuales a la autora.
 
 ### Prompt
@@ -62,7 +62,7 @@ Preferencias de hora y tolerancia persistentes, validación de HH:mm y rango 0,1
 
 #### A5 · Retrofit
 
-Catálogo propio en docs/templates.json y copia idéntica en assets/recorded/project_templates.json. Una constante elige red o grabación, con el mismo Json(ignoreUnknownKeys=true) en ambos caminos y el httpClient del esqueleto. El modo de entrega es grabado. La URL real apunta a la rama de esta entrega. Caso incómodo: sin red, error HTTP o versión/formato inválido usan la grabación y se identifican como fallback. Se añadieron pruebas de esos caminos y de cancelación; ejecución de Gradle pendiente por red.
+Catálogo propio en docs/templates.json y copia idéntica en assets/recorded/project_templates.json. Una constante elige red o grabación, con el mismo Json(ignoreUnknownKeys=true) en ambos caminos y el httpClient del esqueleto. El modo de entrega es grabado. La URL real apunta a la rama de esta entrega y se activará al publicarla; GitHub rechazó el push desde la integración con 403. Caso incómodo: sin red, error HTTP o versión/formato inválido usan la grabación y se identifican como fallback. Se añadieron pruebas de esos caminos y de cancelación; ejecución de Gradle pendiente por red.
 
 #### A2 · Lista, detalle y compartir foto
 
@@ -98,3 +98,11 @@ Mensajes de la persona, en orden (cada línea es un envío independiente):
 ### What happened
 
 Primero se conectó GitHub. La instalación de sofiahuch no daba acceso al repositorio privado de otra cuenta. Tras hacerse público, la clonación y el pull funcionaron. Los avisos automáticos de conexión de la interfaz no se presentan como prompts de la persona.
+
+### Revisión final de SH-01
+
+Se corrigieron el permiso de cámara al volver de ajustes, la retirada del sensor al pausar, el estado de notificaciones al volver de ajustes y el aislamiento del listado compartido al cambiar de cuenta. Un primer intento de aplicar el parche A3 fue rechazado por dos operaciones sobre el mismo archivo; se corrigió el parche antes de aplicarlo. Lint encontró la ausencia de uses-feature para cámara opcional; se añadió, y lint pasó sin errores. Sus sugerencias de actualizar versiones no se aplicaron.
+
+Las descargas de dependencias necesitaron el proxy/certificados del entorno y una caché temporal externa de JUnit/Hamcrest, con sus versiones oficiales originales. Esto no modifica las dependencias del repositorio. El detalle de resultados y pruebas manuales pendientes está en docs/VALIDATION.md.
+
+Se ejecutó de nuevo git pull --ff-only origin main antes de cerrar: Already up to date. La creación de la rama remota recibió 403 Resource not accessible by integration. Se entrega el código con su historial en un bundle y un parche, además del APK debug, en lugar de afirmar una subida que no ocurrió. Firebase sigue sin conexión confirmada: no se ha creado un proyecto, google-services.json ni se han publicado reglas remotas. No se han introducido credenciales ni se ha activado facturación.
