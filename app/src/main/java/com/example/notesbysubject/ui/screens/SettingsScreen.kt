@@ -12,6 +12,19 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import android.Manifest
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
+import android.provider.Settings
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.ContextCompat
+import androidx.compose.material3.Switch
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.runtime.remember
+import com.example.notesbysubject.reminders.ReminderScheduler
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -42,14 +55,20 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
 
 @Composable
 private fun SettingsEditor(settings: AppSettings, modifier: Modifier) {
-    val container = LocalContext.current.appContainer
+    val context = LocalContext.current
+    val container = context.appContainer
     val scope = rememberCoroutineScope()
     var time by rememberSaveable(settings.reminderHour, settings.reminderMinute) {
         mutableStateOf(String.format(Locale.ROOT, "%02d:%02d", settings.reminderHour, settings.reminderMinute))
     }
     var tolerance by rememberSaveable(settings.levelTolerance) { mutableStateOf(settings.levelTolerance.toString()) }
     var message by rememberSaveable { mutableStateOf<String?>(null) }
-    var saving by rememberSaveable { mutableStateOf(false) }
+    var saving by remember { mutableStateOf(false) }
+    var remindersEnabled by rememberSaveable(settings.remindersEnabled) { mutableStateOf(settings.remindersEnabled) }
+    val permissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+        remindersEnabled = granted
+        if (!granted) message = "Notifications were denied. You can enable them in system settings."
+    }
     val parsedTime = parseReminderTime(time)
     val parsedTolerance = parseLevelTolerance(tolerance)
 
@@ -68,16 +87,33 @@ private fun SettingsEditor(settings: AppSettings, modifier: Modifier) {
             isError = parsedTolerance == null, singleLine = true, modifier = Modifier.fillMaxWidth(),
             supportingText = { Text("Choose a value between 0.1 and 15 degrees") }
         )
+        Text("Daily deadline reminder")
+        Switch(checked = remindersEnabled, onCheckedChange = { enabled ->
+            if (enabled && Build.VERSION.SDK_INT >= 33 && ContextCompat.checkSelfPermission(
+                    context, Manifest.permission.POST_NOTIFICATIONS
+                ) != PackageManager.PERMISSION_GRANTED) {
+                permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+            } else { remindersEnabled = enabled }
+        })
+        Text("Android chooses the execution time, so reminders may arrive late. Only unfinished projects due today or earlier are included.")
+        if (!NotificationManagerCompat.from(context).areNotificationsEnabled()) {
+            Text("Notifications are disabled in system settings.")
+            OutlinedButton(onClick = {
+                context.startActivity(Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName))
+            }) { Text("Open notification settings") }
+        }
         Button(
             enabled = parsedTime != null && parsedTolerance != null && !saving,
             onClick = {
                 saving = true
                 scope.launch {
                     try {
-                        container.settings.save(settings.copy(
+                        val updated = settings.copy(
                             reminderHour = parsedTime!!.first, reminderMinute = parsedTime.second,
-                            levelTolerance = parsedTolerance!!
-                        ))
+                            levelTolerance = parsedTolerance!!, remindersEnabled = remindersEnabled
+                        )
+                        container.settings.save(updated)
+                        ReminderScheduler.sync(context, updated, replace = true)
                         message = "Settings saved"
                     } catch (_: Exception) { message = "Could not save settings. Please try again." }
                     finally { saving = false }
