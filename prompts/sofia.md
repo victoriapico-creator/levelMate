@@ -64,6 +64,10 @@ Preferencias de hora y tolerancia persistentes, validación de HH:mm y rango 0,1
 
 Catálogo propio en docs/templates.json y copia idéntica en assets/recorded/project_templates.json. Una constante elige red o grabación, con el mismo Json(ignoreUnknownKeys=true) en ambos caminos y el httpClient del esqueleto. El modo de entrega es grabado. La URL real apunta a la rama de esta entrega. Caso incómodo: sin red, error HTTP o versión/formato inválido usan la grabación y se identifican como fallback. Se añadieron pruebas de esos caminos y de cancelación; ejecución de Gradle pendiente por red.
 
+#### A2 · Lista, detalle y compartir foto
+
+Lista y detalle conectados a Room; creación y edición, materiales con unidades y pasos ordenados con done. Guardado del formulario en ViewModel para sobrevivir a rotaciones. Plantillas crean todas las filas en una transacción. Fotos generales y por proyecto, recuperación de fotos antiguas y envío con FileProvider, ClipData y permiso temporal de lectura. Caso incómodo: lista vacía, proyecto eliminado, foto desaparecida, cámara sin almacenamiento o app receptora ausente. Se avisó antes de modificar AppNavGraph.kt. Se reemplazó el nombre de archivo sólo por segundos por un nombre temporal único para impedir sobrescrituras.
+
 ## SH-02 · Aclaraciones y desbloqueo
 
 - **Date and time:** 2026-11-22; horas de los mensajes no disponibles en la interfaz; anotados en orden al recuperar el código, a las 21:56 Europe/Madrid.

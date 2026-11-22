@@ -69,10 +69,14 @@ import com.example.notesbysubject.ui.camera.calculateTiltAngle
 import com.example.notesbysubject.ui.camera.filterRecognizedLines
 import com.example.notesbysubject.ui.camera.isWithinTolerance
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import java.io.File
 
 @Composable
 fun CameraScreen(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    projectId: Long? = null
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -102,6 +106,7 @@ fun CameraScreen(
         CameraPreviewContent(
             context = context,
             lifecycleOwner = lifecycleOwner,
+            projectId = projectId,
             modifier = modifier
         )
     } else {
@@ -125,12 +130,14 @@ fun CameraScreen(
 private fun CameraPreviewContent(
     context: Context,
     lifecycleOwner: LifecycleOwner,
+    projectId: Long?,
     modifier: Modifier = Modifier
 ) {
     val imageCapture = remember { ImageCapture.Builder().build() }
     var savedMessage by remember { mutableStateOf<String?>(null) }
     var scanState by remember { mutableStateOf<ScanState?>(null) }
     val scope = rememberCoroutineScope()
+    var capturing by remember { mutableStateOf(false) }
 
     val sensorManager = remember {
         context.getSystemService(Context.SENSOR_SERVICE) as? SensorManager
@@ -244,20 +251,30 @@ private fun CameraPreviewContent(
         ) {
             // Shutter Button
             IconButton(
-                onClick = {
-                    val photoFile = PhotoStorage.createPhotoFile(context)
+                enabled = !capturing,
+                onClick = capture@{
+                    val photoFile = try { PhotoStorage.createPhotoFile(context, projectId) }
+                    catch (_: Exception) {
+                        Toast.makeText(context, "Could not create a photo file. Check available storage.", Toast.LENGTH_LONG).show()
+                        return@capture
+                    }
+                    capturing = true
                     val outputOptions = PhotoStorage.createOutputFileOptions(photoFile)
                     imageCapture.takePicture(
                         outputOptions,
                         ContextCompat.getMainExecutor(context),
                         object : ImageCapture.OnImageSavedCallback {
                             override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
+                                capturing = false
+                                registerPhoto(context, photoFile, projectId)
                                 val msg = "Saved ${photoFile.name}"
                                 savedMessage = msg
                                 Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
                             }
 
                             override fun onError(exception: ImageCaptureException) {
+                                capturing = false
+                                photoFile.delete()
                                 Toast.makeText(
                                     context,
                                     "Error taking photo: ${exception.message}",
@@ -281,15 +298,23 @@ private fun CameraPreviewContent(
 
             // Scan Button
             Button(
-                onClick = {
+                enabled = !capturing,
+                onClick = scan@{
+                    val photoFile = try { PhotoStorage.createPhotoFile(context, projectId) }
+                    catch (_: Exception) {
+                        scanState = ScanState.Error
+                        return@scan
+                    }
+                    capturing = true
                     scanState = ScanState.Loading
-                    val photoFile = PhotoStorage.createPhotoFile(context)
                     val outputOptions = PhotoStorage.createOutputFileOptions(photoFile)
                     imageCapture.takePicture(
                         outputOptions,
                         ContextCompat.getMainExecutor(context),
                         object : ImageCapture.OnImageSavedCallback {
                             override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
+                                capturing = false
+                                registerPhoto(context, photoFile, projectId)
                                 val msg = "Saved ${photoFile.name}"
                                 savedMessage = msg
                                 Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
@@ -314,6 +339,8 @@ private fun CameraPreviewContent(
                             }
 
                             override fun onError(exception: ImageCaptureException) {
+                                capturing = false
+                                photoFile.delete()
                                 scanState = ScanState.Error
                                 Toast.makeText(
                                     context,
@@ -406,4 +433,16 @@ fun Camera(
     modifier: Modifier = Modifier
 ) {
     CameraScreen(modifier = modifier)
+}
+
+private fun registerPhoto(context: Context, photo: File, projectId: Long?) {
+    val app = context.appContainer
+    app.applicationScope.launch {
+        try { app.projects.addPhoto(photo, projectId, app.notesDirectory) }
+        catch (_: Exception) {
+            withContext(Dispatchers.Main) {
+                Toast.makeText(context, "Photo saved. Reload saved photos to add it to the list.", Toast.LENGTH_LONG).show()
+            }
+        }
+    }
 }
