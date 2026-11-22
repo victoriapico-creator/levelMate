@@ -39,6 +39,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -57,6 +58,8 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.example.notesbysubject.ui.camera.LevelIndicator
+import com.example.notesbysubject.appContainer
+import com.example.notesbysubject.data.settings.AppSettings
 import com.example.notesbysubject.ui.camera.PhotoStorage
 import com.example.notesbysubject.ui.camera.ScanResultSheet
 import com.example.notesbysubject.ui.camera.ScanState
@@ -137,7 +140,8 @@ private fun CameraPreviewContent(
     }
 
     var currentAngle by remember { mutableFloatStateOf(0f) }
-    var isLevel by remember { mutableStateOf(true) }
+    val settings by context.appContainer.settings.settings.collectAsState(initial = AppSettings())
+    val isLevel = isWithinTolerance(currentAngle, settings.levelTolerance)
 
     DisposableEffect(sensorManager, accelerometer) {
         if (sensorManager == null || accelerometer == null) {
@@ -159,7 +163,6 @@ private fun CameraPreviewContent(
                             smoothedAngle = applyLowPassFilter(rawAngle, smoothedAngle)
                         }
                         currentAngle = smoothedAngle
-                        isLevel = isWithinTolerance(smoothedAngle)
                     }
                 }
 

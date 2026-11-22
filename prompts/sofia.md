@@ -54,7 +54,11 @@ La persona confirmó explícitamente «Completa las seis por orden», por lo que
 
 #### A4 · Room
 
-En curso: entidades y relaciones, consultas observables, operaciones suspendidas y transacciones. Las fechas se guardan como ISO yyyy-MM-dd o null; las cantidades son texto para admitir unidades. Al borrar un proyecto se eliminan sus materiales y pasos y sus fotos pasan a generales. No se borran archivos de fotos al borrar un proyecto.
+Implementado: entidades y relaciones, consultas observables, operaciones suspendidas y transacciones. Las fechas se guardan como ISO yyyy-MM-dd o null; las cantidades son texto para admitir unidades. Al borrar un proyecto se eliminan sus materiales y pasos y sus fotos pasan a generales. No se borran archivos de fotos al borrar un proyecto. Se añadieron pruebas instrumentadas para base vacía, clave foránea inválida, borrado, transacción inválida y recordatorios de proyectos completos; su ejecución necesita Android.
+
+#### A3 · DataStore
+
+Preferencias de hora y tolerancia persistentes, validación de HH:mm y rango 0,1–15°, guardado atómico y tolerancia aplicada a la cámara. Se conserva 1,5° como valor inicial. Caso incómodo: 25:70, NaN o tolerancia fuera del rango impiden guardar. Inicio de la aplicación importa las fotos previas sin duplicarlas.
 
 ## SH-02 · Aclaraciones y desbloqueo
 
@@ -73,6 +77,7 @@ Mensajes de la persona, en orden (cada línea es un envío independiente):
 2. ponme lo de autorizar
 3. ya esta
 4. prueba ahora que es publico
+5. Sí, conectaré Firebase
 
 ### What happened
 
