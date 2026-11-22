@@ -15,7 +15,7 @@ import retrofit2.http.GET
 const val USE_RECORDED_TEMPLATES = true
 
 interface TemplateApi {
-    @GET("victoriapico-creator/levelMate/codex/levelmate-complete/docs/templates.json")
+    @GET("victoriapico-creator/levelMate/codex/levelmate-local/docs/templates.json")
     suspend fun getTemplates(): TemplateCatalog
 }
 

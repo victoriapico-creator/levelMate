@@ -106,3 +106,28 @@ Se corrigieron el permiso de cámara al volver de ajustes, la retirada del senso
 Las descargas de dependencias necesitaron el proxy/certificados del entorno y una caché temporal externa de JUnit/Hamcrest, con sus versiones oficiales originales. Esto no modifica las dependencias del repositorio. El detalle de resultados y pruebas manuales pendientes está en docs/VALIDATION.md.
 
 Se ejecutó de nuevo git pull --ff-only origin main antes de cerrar: Already up to date. La creación de la rama remota recibió 403 Resource not accessible by integration. Se entrega el código con su historial en un bundle y un parche, además del APK debug, en lugar de afirmar una subida que no ocurrió. Firebase sigue sin conexión confirmada: no se ha creado un proyecto, google-services.json ni se han publicado reglas remotas. No se han introducido credenciales ni se ha activado facturación.
+
+## SH-03 · Versión local para Android Studio
+
+- **Date and time:** 2026-11-22 (fecha del contexto del cliente; hora exacta del envío no disponible). Registro técnico posterior al comenzar el cambio: 2026-11-23T00:01+01:00 Europe/Madrid.
+- **Author:** sofiahuch, con asistencia de Codex.
+- **Tool:** ChatGPT Codex, misma conversación.
+- **Files touched:** dependencias del módulo app, data/sharing/, SharingViewModel.kt, SharedScreen.kt, LevelMateApplication.kt, pruebas, README, docs y configuración Firebase retirada. AppNavGraph.kt se conserva.
+- **Result:** accepted with changes (entrega técnica; revisión manual de la persona pendiente).
+- **How I checked it:**
+  - What the AI ran: git pull --ff-only origin main: Already up to date. Pasaron 31 pruebas unitarias, assembleDebug, lintDebug (0 errores) y assembleDebugAndroidTest. Se verificó la ausencia de los SDK Authentication/Firestore en el APK. AppNavGraph.kt, catálogo de versiones, plugins raíz y wrapper se conservan. No se ejecutó en un dispositivo Android.
+  - What I checked myself: pendiente; no se atribuyen pruebas manuales a la persona.
+
+### Prompt
+
+Mensajes de la persona, por orden:
+
+1. puedes no usar firebase?
+2. osea la app que se usa es android studio
+3. Local, sin cuentas ni configuración
+
+### What happened
+
+La persona eligió explícitamente una aplicación local. Se mantiene el proyecto Android para abrir en Android Studio, los datos en Room y el resto de funciones, y se sustituye la parte de cuentas/nube por exportación e importación de proyectos mediante archivos. Esta alternativa no cumple literalmente la A6 original, que pedía login y Firestore; se informó de ello antes de confirmar la elección. Se conserva el historial anterior en lugar de reescribir lo que se pidió o comprobó.
+
+Se retiraron las dependencias directas del backend y su aplicación condicional de Google Services, las clases y pantalla de autenticación y las reglas/configuración/pruebas Firestore. Las referencias históricas del logbook y la guía original se conservan como historial, no como configuración activa. Se añadieron archivos de proyecto versionados, exportación mediante selector/intent, lectura limitada, vista previa y validación antes de insertar en Room con identificadores nuevos. Las 13 pruebas nuevas cubren formato, contenido, límites, orden y datos corruptos. La publicación de la rama sigue dependiendo del permiso de escritura GitHub; la variante local se entrega como proyecto para Android Studio y APK debug.

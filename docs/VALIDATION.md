@@ -1,52 +1,47 @@
-# Comprobaciones de LevelMate
+# Validación de la versión local
 
-Fecha: 22/11/2026. Las comprobaciones automáticas las ejecutó Codex. No se atribuyen pruebas manuales a la persona.
+Variante solicitada desde el contexto del cliente de 22/11/2026. Las comprobaciones automáticas las realiza Codex. La persona no ha declarado pruebas manuales.
 
-## Resultados automáticos
+## Estado
 
-- **21 pruebas unitarias JVM: correctas**, incluyendo fechas imposibles y bisiestas, validación de ajustes, tolerancia, cambio de hora de Madrid, payload compartido sin rutas de fotos, datos corruptos y las seis pruebas de plantillas. Una de las pruebas de plantillas realiza una petición HTTP local con Retrofit y comprueba el User-Agent y el parser con campos desconocidos.
-- **10 comprobaciones de reglas de Firestore: correctas** contra el emulador local, proyecto `demo-levelmate`. Comprueban creación, lectura por participantes, denegación a terceros y anónimos, denegación de escritura y borrado por lectores, propietario inmutable, campos de fotos rechazados y nombre inválido.
-- **Compilación APK debug: correcta**. Se incluye un APK de prueba; no es una release de Play ni una entrega C2.
-- **Lint debug: correcto, 0 errores y 14 avisos no bloqueantes.** Se conservan las versiones solicitadas, aunque lint sugiera actualizaciones. **Compilación del APK de pruebas instrumentadas: correcta.** Su ejecución en un dispositivo sigue pendiente.
-- XML y JSON válidos; catálogo publicado y grabado idénticos. Catálogo de versiones, Gradle wrapper, plugins raíz, settings.gradle.kts y HttpClient.kt iguales a los del repositorio de partida. El apartado original Facts del README se conserva byte por byte.
+- **31 pruebas unitarias: correctas**, incluidas las 13 pruebas nuevas de exportación e importación.
+- **APK debug: compilado correctamente.**
+- **Lint: 0 errores y 18 avisos no bloqueantes.**
+- **APK de pruebas instrumentadas: compilado.** No se ejecutó en dispositivo.
+- Se comprobó que el APK no contiene los SDK Authentication ni Firestore y que no quedan importaciones ni llamadas a sus API en el código de la app.
+- Catálogo de versiones, plugins raíz, wrapper y AppNavGraph.kt conservados respecto a las referencias originales/entrega anterior.
 
-El entorno empezó sin SDK y sin Gradle descargado. Se instaló el SDK 37.0 y se utilizó la JVM 25 declarada por el repositorio. Para la red de este entorno se utilizó su proxy y el almacén de certificados del sistema, manteniendo la verificación TLS. Las peticiones de Gradle de JUnit/Hamcrest recibieron 403; se preparó una caché Maven temporal con los mismos artefactos oficiales JUnit 4.13.2 y Hamcrest 1.3 recuperados mediante curl. Se aplicó sólo mediante un init script externo al repositorio. No cambia las versiones o repositorios de la app entregada. Lint detectó que faltaba declarar la cámara como hardware opcional; se corrigió con uses-feature required=false y se volvió a ejecutar correctamente. El nombre del lanzador se ajustó a LevelMate manteniendo el paquete original.
+Los 21 tests y las 10 comprobaciones Firestore de la entrega anterior son históricos y no son el resultado de esta variante. Las pruebas Firestore se han retirado porque ya no se utiliza ese backend.
 
-## Pruebas instrumentadas de Room
+Se ejecutan pruebas unitarias, compilación APK debug, lint y compilación de tests instrumentados con las versiones existentes. Este entorno usa SDK 37.0/JVM 25 y su configuración de proxy/certificados. Conserva la caché temporal externa de los artefactos oficiales JUnit 4.13.2/Hamcrest 1.3 necesaria para las restricciones de red. No se cambian los repositorios, versiones o plugins declarados del proyecto.
 
-`ProjectDatabaseTest.kt` contiene cinco pruebas: base vacía/proyecto ausente, cascada y fotos conservadas, clave foránea inválida, operación inválida sin proyecto parcial y exclusión de proyectos terminados de los recordatorios.
+## Comprobaciones nuevas de archivos
 
-La ejecución instrumentada requiere un dispositivo o emulador Android; **no se han ejecutado** pruebas en un dispositivo en esta sesión. Tampoco se ha afirmado una prueba visual de cámara, intents o notificaciones.
+`ProjectFileTest` comprueba recorrido exportar/importar, contenido sin fotos/rutas/identificadores/cuentas, valores opcionales y listas vacías, campos desconocidos, cabeceras y versiones, fechas imposibles, materiales inválidos, orden de pasos, posiciones repetidas o negativas, límite de elementos y bytes, texto mal formado, UTF-8 inválido, anidamiento excesivo y nombres de archivo sin separadores de ruta.
 
-En un equipo con Android Studio y un dispositivo conectado:
+El archivo sólo contiene datos del proyecto; importarlo crea identificadores nuevos y nunca importa rutas de fotos. Se lee hasta 256 KB y se valida antes de ofrecer la confirmación. Room sigue usando su transacción para crear el proyecto con todos sus materiales y pasos.
 
-```sh
-bash gradlew :app:testDebugUnitTest :app:assembleDebug :app:lintDebug
-bash gradlew :app:connectedDebugAndroidTest
-firebase emulators:exec --only firestore --project demo-levelmate "node scripts/check-firestore-rules.mjs"
-```
+## Recorrido manual pendiente en Android Studio
 
-## Recorrido manual pendiente
+| Comprobación | Resultado esperado |
+|---|---|
+| Abrir la carpeta levelMate, sincronizar y Run | App Android disponible sin cuenta ni configuración de backend |
+| Modo avión: crear proyecto, materiales/pasos y cerrar/abrir | Todo persiste localmente |
+| Share / import projects sin proyectos | Exportar deshabilitado; importar disponible |
+| Save project file y cancelar el selector | Room no cambia y no se informa de un guardado inexistente |
+| Guardar y compartir un proyecto válido | Archivo JSON con fecha, materiales y pasos; sin fotos ni rutas privadas |
+| Elegir un archivo y revisar; cancelar la vista previa | Ningún proyecto nuevo se guarda |
+| Importar como proyecto nuevo y repetir | Copias independientes; no sobrescribe proyectos anteriores |
+| Elegir archivo corrupto, vacío, versión no compatible o más de 256 KB | Aviso de error; no se crea un proyecto parcial |
+| Borrar proyecto durante una exportación o denegar acceso al archivo | Error recuperable, sin cierre de la app |
+| Compartir una foto del detalle | Intent de imagen con permiso temporal; fotos del proyecto fuera del JSON |
+| Ajustes y recordatorios con notificaciones denegadas | Se conserva el comportamiento validado de la entrega anterior |
+| Cámara, nivel y escaneo en teléfono/emulador | Se conserva el comportamiento existente; sin prueba visual declarada en esta sesión |
 
-| Fila | Acción | Resultado esperado |
-|---|---|---|
-| A2/A4 | Abrir Projects con datos borrados, crear un proyecto y volver a abrir la app | Mensaje de lista vacía al principio; proyecto persistente después |
-| A2/A4 | Nombre vacío, más de 40 caracteres o fecha 31/02/2026; rotar con campos válidos | No permite guardar entradas inválidas; campos y operación de guardado sobreviven a la rotación |
-| A4 | Añadir materiales con unidades, pasos, marcar uno y borrar el proyecto | Materiales/pasos se eliminan; fotos pasan a generales y sus archivos permanecen |
-| A3/A9 | Guardar 01:30 y 2,0 grados, cerrar/abrir; probar 25:70 o NaN | Ajustes válidos persisten y se aplican al nivel; inválidos impiden guardar |
-| A5 | Modo grabado, modo avión, Load templates y Use template | Crea un proyecto con sus materiales/pasos sin necesitar red |
-| A5 | Publicar la rama, poner USE_RECORDED_TEMPLATES=false y cargar; repetir sin red | Lee el JSON remoto; sin red muestra aviso y la copia grabada |
-| A2/A8 | Tomar dos fotos seguidas y compartir una en una app receptora | Dos archivos distintos; receptor puede abrir content:// con permiso temporal |
-| A2/A8 | Eliminar el archivo de una foto en Device Explorer | Aparece Photo file is missing, compartir deshabilitado y sin cierre de la app |
-| A8/A9 | Denegar cámara y volver desde ajustes tras permitirla; poner la app en segundo plano | Se actualiza el permiso al volver; el sensor se retira al pausar |
-| A7 | Proyecto con fecha de hoy y un paso pendiente; activar y guardar hora próxima | Un trabajo periódico único, permiso de notificaciones y notificación aproximada con apertura de la app |
-| A7 | Denegar notificaciones o completar todos los pasos; cambiar hora y guardar varias veces | Sin cierres ni notificación indebida; sin trabajos duplicados |
-| A6 | Terminar Firebase Spark, entrar con dos cuentas, compartir el UID del segundo usuario | El segundo ve la copia; sólo el propietario actualiza o retira; importar crea una copia local |
-| A6 | Cambiar de usuario y probar modo avión | No se muestran datos de la sesión anterior; caché identificada y errores de red recuperables |
-| A6 | Abrir Shared sin configuración Firebase | Aviso de función sin configurar; las funciones locales siguen disponibles |
+Las pruebas instrumentadas de Room necesitan un dispositivo; compilar su APK no equivale a ejecutarlas. No se atribuye una prueba en teléfono o emulador Android a esta sesión.
 
-## Pendientes externos
+## Límites y publicación
 
-1. **Firebase no está provisionado.** Falta acceso a la cuenta para crear el proyecto Spark, registrar Android, descargar app/google-services.json, habilitar Email/Password y publicar las reglas de producción. No se ha activado Blaze ni facturación.
-2. **GitHub rechazó crear la rama** `codex/levelmate-complete` con `403 Resource not accessible by integration`. El repositorio público se pudo clonar y actualizar, pero esta conexión no puede escribir en él. Se entrega un bundle con los commits y un parche; no se afirma un push o PR inexistente.
-3. **La URL real de plantillas necesita publicar la rama.** La copia grabada sí funciona y el cliente Retrofit se ha comprobado con HTTP local. Tras subir la rama, la ruta del README sirve el JSON; si se cambia la rama o se elimina, hay que actualizar la URL.
+- Esta es la alternativa local elegida por la persona. No cumple literalmente la A6 original que pedía login/Firestore. No hay sincronización automática ni control de cuentas; se comparten copias mediante archivos.
+- La publicación de la rama y del JSON real de plantillas sigue pendiente del acceso de escritura GitHub. La copia de plantillas en assets funciona sin red.
+- No se solicita ni configura Firebase, Supabase, claves de backend ni un plan de pago.

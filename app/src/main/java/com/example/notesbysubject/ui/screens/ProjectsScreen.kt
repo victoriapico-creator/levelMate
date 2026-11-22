@@ -73,7 +73,7 @@ fun ProjectsScreen(
                 Button(onClick = onNavigateToProjectForm, modifier = Modifier.fillMaxWidth()) { Text("New project") }
                 OutlinedButton(onClick = onNavigateToCamera, modifier = Modifier.fillMaxWidth()) { Text("Camera") }
                 OutlinedButton(onClick = onNavigateToSettings, modifier = Modifier.fillMaxWidth()) { Text("Settings") }
-                OutlinedButton(onClick = onNavigateToShared, modifier = Modifier.fillMaxWidth()) { Text("Shared projects") }
+                OutlinedButton(onClick = onNavigateToShared, modifier = Modifier.fillMaxWidth()) { Text("Share / import projects") }
                 actions.message?.let { Text(it, color = MaterialTheme.colorScheme.error) }
                 Text("Projects", style = MaterialTheme.typography.titleLarge)
             }

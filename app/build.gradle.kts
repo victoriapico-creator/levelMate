@@ -3,14 +3,6 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.ksp)
-    // The Google Services plugin already declared at the root is applied below
-    // only when app/google-services.json is present.
-}
-
-// The existing Firebase plugin is activated only when the real Android configuration exists.
-// Plugin versions and the version catalog are unchanged.
-if (file("google-services.json").isFile) {
-    apply(plugin = "com.google.gms.google-services")
 }
 
 android {
@@ -71,10 +63,6 @@ dependencies {
     implementation(libs.retrofit.kotlinx.serialization)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.coil.compose)
-    // Session 9: Firebase Authentication and Firestore
-    implementation(platform(libs.firebase.bom))
-    implementation(libs.firebase.auth)
-    implementation(libs.firebase.firestore)
     // Session 10: WorkManager
     implementation(libs.androidx.work.runtime.ktx)
     // Session 11: CameraX
