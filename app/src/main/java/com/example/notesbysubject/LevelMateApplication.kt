@@ -5,6 +5,7 @@ import android.content.Context
 import com.example.notesbysubject.data.local.LevelMateDatabase
 import com.example.notesbysubject.data.local.ProjectRepository
 import com.example.notesbysubject.data.settings.SettingsRepository
+import com.example.notesbysubject.data.sharing.SharingRepository
 import com.example.notesbysubject.data.templates.TemplateRepository
 import com.example.notesbysubject.reminders.ReminderScheduler
 import java.io.File
@@ -33,6 +34,7 @@ class AppContainer(context: Context) {
     val projects = ProjectRepository(LevelMateDatabase.getInstance(context))
     val settings = SettingsRepository(context)
     val templates = TemplateRepository.create(context.applicationContext)
+    val sharing = SharingRepository(context.applicationContext)
     val notesDirectory = File(context.filesDir, "notes")
     val photoImportError = MutableStateFlow<String?>(null)
 

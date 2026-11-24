@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "775453618928",
+    "project_id": "levelmate-56e8c",
+    "storage_bucket": "levelmate-56e8c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:775453618928:android:15f6f4014601cb7ed44835",
+        "android_client_info": {
+          "package_name": "com.example.notesbysubject"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDR4vr3Jw2H-SaExDVJz00vtzgt4Shr9Ho"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

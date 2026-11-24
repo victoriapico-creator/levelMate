@@ -18,6 +18,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -38,6 +40,22 @@ import com.example.notesbysubject.ui.observeData
 
 @Composable
 fun SharedScreen(modifier: Modifier = Modifier, onProjectImported: (Long) -> Unit = {}) {
+    var showPeople by rememberSaveable { mutableStateOf(true) }
+    Column(modifier.fillMaxSize()) {
+        TabRow(selectedTabIndex = if (showPeople) 0 else 1) {
+            Tab(selected = showPeople, onClick = { showPeople = true }, text = { Text("With people") })
+            Tab(selected = !showPeople, onClick = { showPeople = false }, text = { Text("Project files") })
+        }
+        if (showPeople) {
+            CloudSharingScreen(Modifier.weight(1f), onProjectImported)
+        } else {
+            ProjectFilesScreen(Modifier.weight(1f), onProjectImported)
+        }
+    }
+}
+
+@Composable
+private fun ProjectFilesScreen(modifier: Modifier = Modifier, onProjectImported: (Long) -> Unit = {}) {
     val context = LocalContext.current
     val model: SharingViewModel = viewModel()
     var retry by remember { mutableStateOf(0) }

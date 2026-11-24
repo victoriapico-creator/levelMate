@@ -1,67 +1,86 @@
-# LevelMate · versión local para Android Studio
+# LevelMate · Android Studio y Firebase
 
-Proyecto Android en Kotlin y Jetpack Compose. Se abre en **Android Studio** y se ejecuta en un teléfono o emulador Android. Paquete: `com.example.notesbysubject`.
-
-Esta versión funciona sin cuentas, servidor ni configuración Firebase. Los proyectos se guardan en Room; los ajustes en DataStore. La persona eligió sustituir la A6 original por compartir/importar archivos. **Esta alternativa local no cumple literalmente la A6 que exigía login y Firestore.**
+App Android en Kotlin y Jetpack Compose. Paquete: `com.example.notesbysubject`. Los proyectos, materiales, pasos y fotos se guardan en Room, y los ajustes en DataStore. Authentication y Firestore permiten compartir los datos del proyecto con otras personas. También se conserva la alternativa de compartir archivos sin cuentas.
 
 ## Abrir y ejecutar
 
-1. Descomprime la entrega y abre en Android Studio la carpeta `levelMate`, donde están `settings.gradle.kts`, `app` y el wrapper de Gradle.
-2. Sincroniza Gradle con las versiones del repositorio. El proyecto utiliza SDK 37 y la JVM 25 indicada en `gradle/gradle-daemon-jvm.properties`.
-3. Selecciona un dispositivo Android API 26 o superior y ejecuta `app` con Run. Para probar permisos de notificación usa API 33 o superior. También se incluye un APK debug para probar la app.
-4. No necesitas crear un proyecto de backend, iniciar sesión ni añadir `google-services.json`. El modo inicial de plantillas usa el archivo incluido en assets, así que las funciones locales funcionan sin conexión.
+1. Abre la carpeta del proyecto en Android Studio: debe contener `settings.gradle.kts`, `app` y `gradlew.bat`. En la entrega anterior de Windows se llama `LevelMate-final`.
+2. Sincroniza Gradle conservando las versiones existentes: SDK 37 y JVM 25. Ignora las sugerencias de actualizar Kotlin o AGP.
+3. Selecciona un teléfono o emulador Android API 26 o superior y pulsa Run. Para comprobar el permiso de notificaciones utiliza API 33 o superior.
+4. `app/google-services.json` ya corresponde al proyecto real LevelMate. El plugin Google Services que ya estaba declarado se aplica cuando encuentra ese archivo. No hace falta instalar un complemento de Firebase en ChatGPT ni en Android Studio para ejecutar la app.
 
-## Uso
+## Firebase configurado
+
+| Dato | Valor |
+|---|---|
+| Proyecto | LevelMate |
+| ID | `levelmate-56e8c` |
+| Plan | Spark, sin cuenta de facturación vinculada |
+| App Android | `com.example.notesbysubject` |
+| Inicio de sesión | Correo electrónico y contraseña |
+| Firestore | Standard, base `(default)`, región `europe-southwest1` (Madrid) |
+| Seguridad | Creada en modo producción; reglas privadas publicadas desde `firestore.rules` |
+
+La configuración Android está en `app/google-services.json`. Contiene los identificadores públicos del cliente Firebase; no contiene una contraseña, clave privada ni cuenta de servicio. Nunca añadas credenciales de administración, contraseñas de usuarios o claves de firma al repositorio. Las fotos permanecen en el teléfono y se comparten mediante intents; no se utiliza Firebase Storage ni Blaze.
+
+- [Configuración de la app Android](https://console.firebase.google.com/project/levelmate-56e8c/settings/general/android:com.example.notesbysubject)
+- [Proveedor de acceso](https://console.firebase.google.com/project/levelmate-56e8c/authentication/providers)
+- [Reglas de Firestore](https://console.firebase.google.com/project/levelmate-56e8c/firestore/databases/-default-/security/rules)
+
+## Compartir con otra persona (A6)
+
+1. Abre **Share / import projects → With people**.
+2. Escribe tu correo y una contraseña de al menos 6 caracteres. Pulsa **Create account** la primera vez; posteriormente usa **Sign in**. No uses tu contraseña de Google: esta es una cuenta propia de LevelMate.
+3. La otra persona también crea su cuenta en LevelMate. Copia el código que aparece en **Your sharing code** usando **Copy your code** y te lo pasa.
+4. Selecciona uno de tus proyectos, introduce su código en **Other person's sharing code** y pulsa **Share / update shared copy**.
+5. La otra persona verá el proyecto en su lista de compartidos. Puede consultar materiales, pasos y fecha, o pulsar **Save as a local project** para guardar una copia independiente en Room.
+6. Para publicar cambios posteriores, vuelve a compartir el mismo proyecto. Se conservan los participantes existentes, hasta 10 en total. Solo el propietario modifica o retira la copia de Firestore.
+7. **Stop sharing** pide confirmación y retira la copia compartida; las copias locales que ya guardaron los participantes permanecen.
+
+No se envían fotos ni rutas privadas a Firestore. Sin conexión se identifica la lista guardada en caché y los errores son recuperables. Cambiar de cuenta elimina de la pantalla los datos de la cuenta anterior. El resto de funciones locales no requiere iniciar sesión.
+
+## Compartir mediante archivos
+
+En **Share / import projects → Project files**, selecciona un proyecto y usa **Share project file** o **Save project file**. El archivo contiene nombre, descripción, fecha, materiales y pasos con su estado. Las fotos se comparten por separado desde el detalle.
+
+**Choose project file** permite revisar el archivo antes de **Import as a new project**. Cada importación genera identificadores nuevos; cancelar no cambia Room. Se validan formato, versión, UTF-8, fechas, cantidades, tamaño máximo de 256 KB, hasta 50 materiales y 100 pasos. Un archivo inválido no crea un proyecto parcial.
+
+## Otras funciones
 
 - **New project:** nombre, descripción y fecha opcional. El detalle permite editar, añadir materiales con unidades, marcar pasos y tomar o adjuntar fotos.
-- **General photos:** fotos sin proyecto y recuperación de fotos tomadas antes de incorporar Room. Eliminar un proyecto conserva sus fotos como generales.
-- **Settings:** hora del recordatorio, activación y tolerancia del nivel entre 0,1 y 15 grados. Android puede retrasar los recordatorios de WorkManager.
-- **Share / import projects:** selecciona un proyecto y usa **Share project file** o **Save project file**. El archivo incluye nombre, descripción, fecha, materiales y pasos con su estado. Las fotos se envían por separado desde el detalle.
-- **Choose project file:** selecciona un archivo `.levelmate.json`, revisa la vista previa y pulsa **Import as a new project**. Cada importación crea un proyecto independiente con identificadores nuevos; no sobrescribe proyectos actuales. Cancelar el selector o la vista previa no cambia Room.
-
-Los archivos se validan antes de importar: formato y versión, máximo 256 KB, nombres/fechas/cantidades válidos, hasta 50 materiales y 100 pasos. Un archivo corrupto, demasiado grande o de una versión incompatible muestra un mensaje y no se guarda. Los pasos se recuperan por su posición; el archivo no incluye rutas privadas, fotos, cuentas ni identificadores de Room.
-
-## Qué se ha retirado de Firebase
-
-Se retiraron las dependencias directas de Authentication/Firestore y su BOM del módulo `app`, los clientes de nube, la pantalla de login, las reglas, los archivos de configuración y las pruebas exclusivas de Firestore. No se aplica Google Services ni se necesita un proyecto Firebase. Las declaraciones originales no usadas del catálogo de versiones y del plugin raíz se conservan para respetar el bloqueo de versiones/plugins del esqueleto. ML Kit, ya incluido para reconocimiento local, puede conservar bibliotecas auxiliares transitivas; no usa aquí un proyecto o cuenta Firebase.
+- **General photos:** fotos sin proyecto y recuperación de capturas anteriores a Room. Borrar un proyecto conserva sus fotos como generales.
+- **Settings:** hora, activación del recordatorio y tolerancia del nivel entre 0,1 y 15 grados. Android decide el momento exacto de WorkManager, por lo que la notificación puede llegar tarde.
 
 ## Llamada real o grabada (A5)
 
-En `data/templates/TemplateRepository.kt`, cambia únicamente:
+En `data/templates/TemplateRepository.kt` se cambia una sola línea:
 
 ```kotlin
 const val USE_RECORDED_TEMPLATES = true
 ```
 
-- `true`: usa `app/src/main/assets/recorded/project_templates.json`. Es el **modo de entrega**, sin red.
-- `false`: después de subir la rama `codex/levelmate-local`, descarga el JSON de [esta URL](https://raw.githubusercontent.com/victoriapico-creator/levelMate/codex/levelmate-local/docs/templates.json). Si fallan red, HTTP, JSON o versión, muestra un aviso y usa la copia grabada.
+- `true`: utiliza `app/src/main/assets/recorded/project_templates.json`, sin red. Es el modo inicial de la entrega.
+- `false`: utiliza Retrofit para leer `docs/templates.json` de la rama `codex/levelmate-local` publicada en GitHub. Si fallan la red, HTTP, JSON o la versión, muestra un aviso y utiliza la copia grabada.
 
-La publicación de esa URL sigue pendiente del push: GitHub rechazó la escritura desde la conexión de esta sesión con 403. Las dos copias del catálogo son idénticas; ambas usan el mismo parser tolerante a campos desconocidos. Se conserva el `httpClient` original y su User-Agent. Si se cambia de rama al publicar, hay que ajustar la ruta de `TemplateApi`.
+La publicación del JSON remoto depende del push de esa rama. La conexión GitHub de esta sesión rechazó la escritura con 403; no se presenta la ruta remota como publicada mientras ese push siga pendiente. Ambas copias del catálogo son idénticas y utilizan el mismo parser con `ignoreUnknownKeys = true` y el `httpClient` original.
 
-## Tabla de cobertura
+## Cobertura y casos incómodos
 
-| Fila | Función | Archivos principales | Pantalla | Caso incómodo |
-|---|---|---|---|---|
-| A1 | Navegación y tema existentes | `ui/navigation/AppNavGraph.kt`, `ui/theme/` | Todas | Proyecto inexistente muestra un aviso |
-| A2 | Lista, detalle, edición y compartir foto por intent | `ui/screens/ProjectsScreen.kt`, `ProjectDetailScreen.kt`, `ui/photos/` | Projects, ProjectDetail | Lista vacía, foto desaparecida o app receptora ausente |
-| A3 | Ajustes persistentes | `data/settings/`, `SettingsScreen.kt` | Settings, Camera | Hora o tolerancia inválida no se guardan |
-| A4 | Proyectos, materiales, pasos y fotos | `data/local/` | Projects, ProjectForm, ProjectDetail | Borrado con relaciones, clave foránea inválida y operación sin proyecto parcial |
-| A5 | Plantillas Retrofit con copia local; publicación pendiente del push | `data/templates/`, `assets/recorded/`, `docs/templates.json` | Projects | Sin red o JSON inválido usa la grabación |
-| A6 original | Sustituida por archivos locales por elección de la persona; sin login/Firestore | `data/sharing/`, `SharingViewModel.kt`, `SharedScreen.kt` | Share / import projects | JSON corrupto, versión inválida, archivo grande o selector cancelado |
-| A7 | Recordatorio diario único | `reminders/`, `SettingsScreen.kt` | Settings, notificación | Sin permiso o sin pendientes no notifica; no duplica trabajos |
-| A8 | Cámara y fotos locales | `CameraScreen.kt`, `PhotoStorage.kt` | Camera, ProjectDetail | Permiso denegado, almacenamiento insuficiente o capturas sucesivas |
-| A9 | Nivel con tolerancia configurable | `ui/camera/`, `CameraScreen.kt` | Camera | Sin acelerómetro conserva el resto de la cámara |
-| A10 | Escaneo existente conservado | `TextScanner.kt`, `RecognizedTextFilter.kt`, `ScanResultSheet.kt` | Camera | Sin texto o baja confianza |
+| Fila | Implementación | Caso incómodo |
+|---|---|---|
+| A2 | Lista, detalle, edición e intent para compartir foto | Lista vacía, foto desaparecida o receptor ausente |
+| A3 | Hora del recordatorio y tolerancia en DataStore | `25:00` y tolerancias fuera de 0,1–15 rechazadas |
+| A4 | Room: proyectos, materiales, pasos y fotos con relaciones | Fecha nula, clave foránea inválida y transacción sin datos parciales |
+| A5 | Plantillas Retrofit, JSON de publicación y copia en assets | Sin red o JSON inválido activa la copia grabada; push pendiente |
+| A6 | Login, Firestore y permisos por propietario/participantes; archivos como alternativa | Credenciales inválidas, sin red, lista vacía y usuario ajeno sin acceso |
+| A7 | Trabajo diario único y notificación de proyectos pendientes | Sin permiso o sin pendientes no notifica; no duplica trabajos |
+| A8–A10 existentes | Cámara, nivel configurable y reconocimiento ML Kit | Permiso denegado, ausencia de acelerómetro o texto no reconocido |
 
-## Decisiones
+Las cantidades incluyen unidades. Room guarda las fechas en ISO `yyyy-MM-dd`; el formulario utiliza `dd/MM/yyyy`. Los pasos conservan su posición y estado.
 
-1. Room conserva la fecha opcional en ISO `yyyy-MM-dd`, mientras el formulario usa `dd/MM/yyyy`. Las cantidades incluyen unidades. Borrar un proyecto conserva sus archivos de fotos.
-2. Compartir archivos permite intercambiar copias completas de los datos del proyecto sin cuentas ni servidor. La importación se revisa antes de guardar, genera identificadores nuevos y utiliza una transacción.
-3. Plantillas y archivos de proyectos tienen formatos versionados. El catálogo incluye una copia grabada y los archivos importados se leen con un límite de tamaño y profundidad antes de decodificarse.
+## Validación y registro
 
-## Validación
-
-Consulta [docs/VALIDATION.md](docs/VALIDATION.md) y el registro de cambios de esta petición en [prompts/sofia.md](prompts/sofia.md), entrada SH-03.
+Consulta [docs/VALIDATION.md](docs/VALIDATION.md) y [prompts/sofia.md](prompts/sofia.md), entrada SH-04. Se distinguen las pruebas automáticas de los recorridos que ha confirmado la persona en el emulador.
 
 Desde la terminal de Android Studio en Windows:
 
@@ -70,15 +89,21 @@ Desde la terminal de Android Studio en Windows:
 .\gradlew.bat :app:connectedDebugAndroidTest
 ```
 
-En Linux/macOS usa `bash gradlew` con los mismos argumentos. Las pruebas instrumentadas necesitan un dispositivo conectado. No se han cambiado versiones ni añadido plugins; no se aplica el plugin Firebase/Google Services al módulo app. `AppNavGraph.kt` se conserva respecto a la entrega anterior.
+Las pruebas instrumentadas necesitan un dispositivo. Las reglas se comprueban con Firebase CLI y el emulador local, sin tocar la base real:
+
+```shell
+firebase emulators:exec --only firestore --project demo-levelmate "node scripts/check-firestore-rules.mjs"
+```
+
+El catálogo de versiones, los plugins raíz y el wrapper conservan sus versiones. `AppNavGraph.kt` no se modifica en SH-04; la nueva opción se integra dentro de la pantalla existente de compartir.
 
 ## Release (C2)
 
-El APK incluido es debug. No se ha generado una release firmada ni una clave de firma; C2 sigue pendiente. Las claves de firma permanecen fuera del repositorio.
+El APK de desarrollo es debug. No se ha generado una release firmada ni una clave de firma; C2 queda fuera de estas seis tareas. Las claves de firma permanecen fuera del repositorio.
 
 ## Referencia original del esqueleto
 
-El apartado siguiente se conserva sin cambios como referencia del curso. Sus indicaciones sobre Firebase/Firestore corresponden a la versión original; para esta variante local prevalece la decisión descrita arriba. No se presenta la alternativa local como cumplimiento literal de la A6 original.
+El apartado siguiente se conserva sin cambios como referencia del curso. La implementación de LevelMate aplica el intercambio de Firestore a proyectos con materiales y pasos.
 
 ## Facts you cannot guess
 
