@@ -196,3 +196,30 @@ Se sustituyeron las referencias a la conversación del README y la validación p
 Se incorporaron el resultado comunicado de connectedDebugAndroidTest y el merge del PR #1, manteniendo separados los resultados automáticos de los recorridos manuales. El historial de prompts, herramientas y resultados anteriores se conserva. No se modifica el registro de Victoria, el bloque original Facts you cannot guess, el código Android, las versiones ni AppNavGraph.kt. El bundle firmado C2 sigue pendiente.
 
 La publicación directa de esta revisión se intentó mediante la integración GitHub y recibió HTTP 403, Resource not accessible by integration. Se prepara el commit de documentación y un bundle incremental desde 74ad52e para incorporarlo y subirlo desde el equipo de desarrollo.
+
+
+## SH-07 · Signed release and final delivery records
+
+- **Date and time:** 2026-11-25, Europe/Madrid; exact send times were not available.
+- **Author:** sofiahuch.
+- **Tool:** ChatGPT Codex, same conversation as SH-06.
+- **Files touched:** README.md, docs/VALIDATION.md, docs/RELEASE.md, prompts/victoria.md and prompts/sofia.md. Release artifacts and signing material remain outside the repository.
+- **Result:** accepted with changes; signed release, English documentation and evidence-based logbook completion prepared.
+- **How I checked it:**
+  - What the AI ran: git pull --ff-only origin main, up to commit 8aefb8f; review of the five original Victoria implementation commits, existing manual notes and signing requirements. The final build used Gradle 9.5.0, SDK 37.0, Build Tools 36.0.0 and JDK 25. bundleRelease, testDebugUnitTest and lintRelease completed with BUILD SUCCESSFUL: 37 unit tests passed, and release lint reported 0 errors, 12 warnings and 3 hints. The bundle passed strict jarsigner verification and bundletool validation, with debuggable=false.
+  - What I checked myself: no additional manual check reported for this change.
+
+### Prompt
+
+1. pues haz esto: **Sobre la entrega completa:** todavía consta pendiente el `.aab` firmado de C2 y hay campos sin completar en el logbook de Victoria. Las seis funciones terminadas no cierran por sí solas esos requisitos.
+2. el read me hay partes escritas en ingles y otras en español, hazlo todo en ingles
+
+### What happened
+
+The README is translated into English, preserving the original course reference and the recorded/remote/offline template instructions. Victoria's records were completed from commits f8fcde9, 7e905c3, 438cca2, 0e0d1c6 and a899748 and the observations already present in the logbook. Missing personal test observations are labelled as not recorded rather than invented. The release bundle was built and signed with a new upload certificate (alias levelmate-upload, RSA 2048, valid for 10,000 days). The private keystore and passwords were saved in a private backup outside the repository; neither is added to Git. AAB SHA-256: eb03086f6c5bbf92d6dbb647a5b2a13347329584e1df8a2164101f277a11f90b.
+
+Build preparation notes: the first command requested a release-unit-test task that this project does not expose; it was replaced with the existing testDebugUnitTest task. SDK installation initially lacked local package/licence metadata, and the current sdkmanager wrapper could not download its Android CLI. The SDK platform metadata was installed from the official version-4 catalogue and the build continued. These adjustments affect only the temporary tool environment; project versions, plugins and Android source files remain unchanged.
+
+Final review: the complete README is in English and retains both true/false code examples, offline fallback steps, all ten coverage rows and the original course reference. Victoria's original prompt bodies, dates and tool names are unchanged. No additional confirmation of the unrecorded personal test cases had been received when this record was closed. The first release build requested an unavailable task; subsequent attempts needed the temporary SDK metadata/licence setup corrected. The final build and all release checks succeeded without changing project versions or Android source files.
+
+Publication: a direct git push to main was attempted after the documentation commit, with terminal prompts disabled. It failed because the execution environment could not obtain a GitHub username/credential. The signed AAB and private key backup are delivered separately; a source-only bundle contains the five Markdown updates for publication from the authenticated development computer.

@@ -1,93 +1,100 @@
-# Validación de LevelMate
+# LevelMate validation
 
-## Compilación y pruebas automáticas
+## Build and automated tests
 
-Resultados de la compilación con Firebase del 24/11/2026, utilizando las versiones del repositorio y la configuración Android real:
+The Firebase build checks on 24 November 2026 used the repository versions and the real Android configuration:
 
-| Comprobación | Resultado |
+| Check | Recorded result |
 |---|---|
-| Pruebas unitarias | 37 correctas, 0 fallos, 0 errores y 0 omitidas; 8 suites |
-| APK debug | Compilado con Authentication y Firestore |
-| Google Services | `processDebugGoogleServices` completada |
-| Lint | 0 errores, 13 advertencias y 3 sugerencias |
-| APK instrumentado | Compilado correctamente |
-| Versiones | Catálogo, plugins raíz y wrapper conservados respecto al esqueleto |
+| Unit tests | 37 passed, 0 failures, 0 errors and 0 skipped; 8 suites |
+| Debug APK | Built with Authentication and Firestore |
+| Google Services | `processDebugGoogleServices` completed |
+| Lint | 0 errors, 13 warnings and 3 hints |
+| Instrumented-test APK | Built successfully |
+| Versions | Original version catalogue, root plugins and wrapper preserved |
 
-Comando de compilación y comprobación:
+Build and check command:
 
 ```powershell
 .\gradlew.bat :app:testDebugUnitTest :app:assembleDebug :app:lintDebug :app:assembleDebugAndroidTest
 ```
 
-La compilación utilizó SDK 37, Build Tools 36.0.0 y JVM 25. Las 37 pruebas incluyen validación de proyectos, ajustes, cálculo del nivel, horario de recordatorios, plantillas, 13 casos de intercambio por archivos y 6 de proyectos compartidos.
+The build used SDK 37, Build Tools 36.0.0 and JVM 25. The 37 tests cover project validation, settings, level calculations, reminder times, templates, 13 file-transfer cases and 6 shared-project cases.
 
-### Pruebas en el dispositivo
+### Device tests
 
-El 25/11/2026 se ejecutó en Windows, con el emulador abierto:
+On 25 November 2026, the following command was run on Windows with the emulator open:
 
 ```powershell
 .\gradlew.bat :app:connectedDebugAndroidTest
 ```
 
-El resultado final comunicado fue `BUILD SUCCESSFUL`. La ejecución se realizó en el equipo de desarrollo con un Pixel 6 virtual Android 14/API 34; el informe XML y el recuento individual de resultados no están adjuntos a este registro.
+The reported terminal result was `BUILD SUCCESSFUL`. The development device was a Pixel 6 virtual device running Android 14/API 34. The XML report and individual test count were not attached to this record.
 
-La clase `ProjectDatabaseTest` comprueba la base vacía, el proyecto inexistente, el borrado con conservación de fotos generales, el rechazo de claves foráneas inválidas, la creación sin datos parciales y la exclusión de proyectos terminados del recordatorio.
+`ProjectDatabaseTest` covers an empty database, a missing project, deletion while keeping general photos, invalid foreign keys, atomic creation and exclusion of completed projects from reminders.
 
 ## Firebase
 
-| Configuración | Valor comprobado |
+| Setting | Verified value |
 |---|---|
-| Proyecto | `levelmate-56e8c` |
-| Plan | Spark, sin facturación vinculada |
-| App Android | `com.example.notesbysubject` |
-| Authentication | Correo electrónico y contraseña |
-| Firestore | Standard, base `(default)`, región `europe-southwest1`, creada en producción |
-| Reglas | `firestore.rules` publicadas, con acceso por propietario y participantes |
+| Project | `levelmate-56e8c` |
+| Plan | Spark, with no billing account attached |
+| Android application | `com.example.notesbysubject` |
+| Authentication | Email and password |
+| Firestore | Standard, `(default)` database, `europe-southwest1`, created in production mode |
+| Rules | Published from `firestore.rules`, with owner/participant access |
 
-`app/google-services.json` contiene la configuración Android del proyecto. Las fotos permanecen en el dispositivo; no se utiliza Firebase Storage.
+`app/google-services.json` contains the project's Android client configuration. Photos remain on the device; Firebase Storage is not used.
 
-### Reglas y servicios
+### Rules and services
 
-| Prueba | Resultado | Cobertura |
+| Test | Result | Coverage |
 |---|---|---|
-| Emulador local de Firestore | 21 comprobaciones correctas | Publicación con `arrayUnion`, conservación y límite de participantes, propietario, consulta filtrada, rechazo de campos inesperados, accesos anónimos y usuarios ajenos |
-| Servicios reales mediante HTTPS REST | 9 comprobaciones correctas | Alta y acceso de dos cuentas temporales, contraseña incorrecta, publicación, lectura del destinatario y permisos |
+| Local Firestore emulator | 21 checks passed | Publishing with `arrayUnion`, participant preservation and limits, ownership, filtered queries, unexpected fields and denied anonymous/outsider access |
+| Live services through HTTPS REST | 9 checks passed | Two temporary accounts, login, incorrect password, publishing, recipient reads and permissions |
 
-El documento y las dos cuentas temporales se eliminaron al terminar, con HTTP 200 en las tres operaciones. Los tokens y contraseñas de prueba se mantuvieron en memoria y no forman parte del repositorio.
+The temporary document and two accounts were deleted afterwards; all three cleanup requests returned HTTP 200. Test passwords and tokens stayed in memory and are not included in the repository.
 
-El script `scripts/check-firestore-rules.mjs` solo admite localhost y el proyecto de demostración `demo-levelmate`.
+`scripts/check-firestore-rules.mjs` only accepts localhost and the demonstration project `demo-levelmate`.
 
-## Pruebas manuales
+## Manual checks
 
-Recorridos comprobados durante el desarrollo. Las primeras pruebas se hicieron con un Pixel 6 virtual API 37 y las pruebas finales con Android 14/API 34.
+The initial checks used a Pixel 6 virtual device on API 37. Final checks used Android 14/API 34.
 
-| Función | Comprobación | Resultado |
+| Feature | Check | Recorded result |
 |---|---|---|
-| Proyecto | Crear `Test`, introducir descripción y fecha y abrir el detalle | Datos visibles en el detalle |
-| Materiales | Añadir `Madera · 2 tablas` | Material y cantidad guardados |
-| Pasos | Marcar un paso y detener/abrir la app | Estado conservado |
-| Fotos | Tomar una captura y detener/abrir la app | Foto guardada y visible |
-| Ajustes | Guardar hora 18:30 y tolerancia 2; probar 25:00 | Persistencia de valores válidos y rechazo de la hora inválida |
-| Compartir foto | Abrir el intent desde una foto del detalle | Selector de aplicaciones receptoras abierto |
-| Archivos | Exportar e importar un proyecto | Copia independiente con materiales y pasos |
-| Firestore | Usar dos cuentas, compartir con el código destinatario e importar una copia local | Intercambio y conservación del contenido correctos |
-| Acceso incorrecto | Probar contraseña incorrecta y después la correcta | Recorrido de error y recuperación confirmado en conjunto; sin captura individual |
-| Recordatorio | Elegir una hora futura, conceder permiso y dejar un proyecto vencido con un paso pendiente | Notificación recibida |
-| Plantillas grabadas | Cargar el catálogo incluido y crear un proyecto | Materiales y pasos disponibles sin red |
-| Plantillas por internet | Compilar con `USE_RECORDED_TEMPLATES = false` y cargar con conexión | Descarga real confirmada |
-| Fallback de plantillas | Mantener `false`, activar modo avión y apagar Wi-Fi | Aviso de la copia incluida y creación de proyecto sin conexión |
+| Project | Create `Test`, enter a description and deadline, then open the detail | Data displayed in the detail |
+| Materials | Add a material with quantity and units | Material and quantity saved |
+| Steps | Mark a step, stop the app and reopen it | Done state preserved |
+| Photos | Capture a photo, stop the app and reopen it | Photo saved and displayed |
+| Settings | Save 18:30 and tolerance 2, then try 25:00 | Valid values persisted; invalid time rejected |
+| Photo sharing | Open the intent from a project photo | Receiving-app chooser displayed |
+| Files | Export and import a project | Independent copy with materials and steps |
+| Firestore | Use two accounts, share through the recipient code and import a local copy | Sharing and project-content preservation confirmed |
+| Incorrect credentials | Try an incorrect password, then the correct one | Error/recovery flow confirmed as a whole; no individual screenshot |
+| Reminder | Select a future time, grant permission and leave a due project with an unfinished step | Notification received |
+| Recorded templates | Load the built-in catalogue and create a project | Materials and steps available offline |
+| Online templates | Build with `USE_RECORDED_TEMPLATES = false` and load with a connection | Actual internet download confirmed |
+| Template fallback | Keep `false`, enable airplane mode and turn off Wi-Fi | Built-in-copy message and offline project creation confirmed |
 
-En la prueba del recordatorio se utilizó el reloj del emulador en formato de 24 horas. WorkManager puede retrasar el aviso; no funciona como una alarma exacta.
+The reminder check used the emulator's clock in 24-hour format. WorkManager may delay execution and does not provide an exact alarm.
 
-## Publicación
+Victoria's historical camera, virtual-sensor and text-recognition observations are preserved in [prompts/victoria.md](../prompts/victoria.md). File lists are linked to their original implementation commits. Additional personal observations are not inferred from successful compilation.
 
-El [pull request #1](https://github.com/victoriapico-creator/levelMate/pull/1) se incorporó a `main` el 25/11/2026. El código de las seis tareas A4, A3, A5, A2, A7 y A6 está integrado en la rama principal.
+## Publication
 
-El [catálogo remoto de plantillas](https://raw.githubusercontent.com/victoriapico-creator/levelMate/codex/levelmate-local/docs/templates.json) devolvió HTTP 200, versión 1 y tres plantillas, con el mismo contenido que la copia de assets. La dirección utiliza `codex/levelmate-local`, por lo que esa rama se conserva. El modo inicial es `USE_RECORDED_TEMPLATES = true`.
+[Pull request #1](https://github.com/victoriapico-creator/levelMate/pull/1) was merged into `main` on 25 November 2026. The six tasks A4, A3, A5, A2, A7 and A6 are integrated in the main branch.
 
-## Alcance de la validación
+The [remote template catalogue](https://raw.githubusercontent.com/victoriapico-creator/levelMate/codex/levelmate-local/docs/templates.json) returned HTTP 200 with version 1 and three templates matching the recorded asset. This address uses `codex/levelmate-local`, so that branch is retained. The default is `USE_RECORDED_TEMPLATES = true`.
 
-- La compilación automática, las comprobaciones del backend y los recorridos manuales se registran por separado.
-- Los casos de permiso de notificaciones denegado, ausencia de proyectos pendientes y trabajo único están contemplados en el código. Este registro no incluye una captura manual individual de cada caso.
-- La precisión del nivel físico y la calidad del OCR requieren una comprobación visual específica; no se añaden aquí resultados nuevos de esas pruebas.
-- El APK disponible es debug. El bundle `.aab` firmado de C2 sigue pendiente.
+## Signed release
+
+On 25 November 2026, `bundleRelease`, `testDebugUnitTest` and `lintRelease` completed with `BUILD SUCCESSFUL`. All 37 unit tests passed again; release lint reported 0 errors, 12 warnings and 3 hints. The signed bundle passed strict JAR-signature verification and `bundletool validate`; its manifest has `debuggable=false`.
+
+The artifact hash, release certificate and rebuild instructions are recorded in [RELEASE.md](RELEASE.md). `LevelMate-release.aab` is delivered separately from Git. Its private signing backup is stored outside the project.
+
+## Scope
+
+- Build checks, backend checks and manual observations are recorded separately.
+- Denied notification permission, no pending projects and unique work are handled in code; this record does not include an individual manual screenshot of every case.
+- Separate observations of physical-level accuracy and blurred/distant-text recognition are only included when recorded in the development logbook.

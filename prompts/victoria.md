@@ -1,14 +1,18 @@
-# Logbook de Victoria
+# Logbook of Victoria
+
+Documentation review: 25 November 2026. File lists and implementation results below were completed from the repository history and the observations already present in this file. Original prompt text, dates, author and tool names are preserved. Missing historical observations are identified as not recorded.
+
 ## VP-01
 
 - **Date and time:** 2026-11-15 13:00
 - **Author:** Victoria
 - **Tool:** Gemini Agent, new chat
-- **Files touched:** (a rellenar después)
-- **Result:** (a rellenar después)
+- **Files touched:** `app/src/main/java/com/example/notesbysubject/MainActivity.kt`, `app/src/main/java/com/example/notesbysubject/ui/navigation/AppNavGraph.kt`, `app/src/main/java/com/example/notesbysubject/ui/screens/CameraScreen.kt`, `app/src/main/java/com/example/notesbysubject/ui/screens/ProjectDetailScreen.kt`, `app/src/main/java/com/example/notesbysubject/ui/screens/ProjectFormScreen.kt`, `app/src/main/java/com/example/notesbysubject/ui/screens/ProjectsScreen.kt`, `app/src/main/java/com/example/notesbysubject/ui/screens/SettingsScreen.kt`, `app/src/main/java/com/example/notesbysubject/ui/screens/SharedScreen.kt`, `app/src/main/java/com/example/notesbysubject/ui/theme/Color.kt`, `app/src/main/java/com/example/notesbysubject/ui/theme/Theme.kt`
+- **Result:** Implementation committed and retained. The original acceptance decision was not recorded.
+- **Commit:** [f8fcde9](https://github.com/victoriapico-creator/levelMate/commit/f8fcde9)
 - **How I checked it:**
-  - What the AI ran: (a rellenar)
-  - What I checked myself: (a rellenar)
+  - What the AI ran: the implementation is present in the commit above. No Gemini build output or emulator-execution log is stored with this entry.
+  - What I checked myself: No individual navigation/theme observation was recorded in this entry. Later integrated project, settings, camera and sharing checks are listed in docs/VALIDATION.md. Separate light/dark theme observations were not recorded.
 - **Prompt:**
 
   Context: Compose app from the course skeleton. MainActivity.kt shows a placeholder screen with the app name. The theme is in ui/theme/. Navigation Compose is already in the dependencies.
@@ -18,21 +22,20 @@
   Done when: I run the app, see Projects, can open every other screen with Back returning to Projects, and the colours are not the template's purple in either theme.
 
 - **What happened:**
-Files touched: AppNavGraph.kt, las seis pantallas, MainActivity.kt, Color.kt y Theme.kt.
-Result: aceptado tal cual (o con los cambios que hayas hecho).
-How I checked it: separa lo que hizo la IA de lo tuyo, por ejemplo: “git status mostraba solo los 10 archivos esperados; ejecuté la app, cada botón abre su pantalla y el Back del sistema vuelve a Projects; los colores son naranja y gris oscuro”.
-What happened: si no hubo fallos, escribe que salió a la primera. Si echaste en falta un botón de volver en pantalla, apúntalo.
+
+The navigation graph, six destination screens and workshop theme were added in the implementation commit. Projects is the start destination, and ProjectDetail uses a project-ID route. Instructions and example observations from the old draft have been replaced by the evidence available from the commit; no unrecorded manual outcome is added.
 
 ## VP-02
 
 - **Date and time:** 2026-11-15 13:10
 - **Author:** Victoria
 - **Tool:** Gemini Agent, new chat
-- **Files touched:** (a rellenar después)
-- **Result:** (a rellenar después)
+- **Files touched:** `app/src/main/java/com/example/notesbysubject/ui/components/ProjectFormFields.kt`, `app/src/main/java/com/example/notesbysubject/ui/screens/ProjectFormScreen.kt`, `app/src/main/java/com/example/notesbysubject/ui/screens/ProjectFormValidation.kt`
+- **Result:** Implementation committed. The existing notes report a working form and an initial validation-message issue.
+- **Commit:** [7e905c3](https://github.com/victoriapico-creator/levelMate/commit/7e905c3)
 - **How I checked it:**
-  - What the AI ran: (a rellenar)
-  - What I checked myself: (a rellenar)
+  - What the AI ran: the implementation is present in the commit above. No Gemini build output or emulator-execution log is stored with this entry.
+  - What I checked myself: The existing note reports that the form works and that "Name is required" appears immediately on opening the screen. A separate observation of form rotation was not recorded. Later project creation and invalid-date checks are listed in docs/VALIDATION.md.
 - **Prompt:**
 
   Context: Compose app called LevelMate. ProjectFormScreen.kt in ui/screens/ is an empty screen that only shows its name. The navigation graph is in ui/navigation/AppNavGraph.kt and the theme is in ui/theme/.
@@ -42,18 +45,20 @@ What happened: si no hubo fallos, escribe que salió a la primera. Si echaste en
   Done when: I open the form, type a name and rotate the emulator, and the text is still there. With an empty name, or a deadline like 31/02/2026 or "abc", I see an error under the field and Save is disabled. With a valid name and an empty or valid deadline, Save is enabled.
 
 - **What happened:**
-The form works. One thing I do not like: "Name is required" appears as soon as the form opens, before the user has typed anything. [añade aquí cualquier otro fallo o arreglo a mano]. The push was rejected again because my teammate had pushed; I fixed it with git pull and push.
+
+The form, stateless fields component and validation functions were added. The original note records the early name-error message and a rejected push resolved with git pull followed by git push. No other manual code fix was recorded. The Save action was connected to Room in the later integration work.
 
 ## VP-03
 
 - **Date and time:** 2026-11-15 13:20
 - **Author:** Victoria
 - **Tool:** Gemini Agent (Gemini 3.6 Flash), new chat
-- **Files touched:** (a rellenar después)
-- **Result:** (a rellenar después)
+- **Files touched:** `app/src/main/AndroidManifest.xml`, `app/src/main/java/com/example/notesbysubject/ui/camera/PhotoStorage.kt`, `app/src/main/java/com/example/notesbysubject/ui/screens/CameraScreen.kt`
+- **Result:** accepted; the existing entry records acceptance without changes.
+- **Commit:** [438cca2](https://github.com/victoriapico-creator/levelMate/commit/438cca2)
 - **How I checked it:**
-  - What the AI ran: (a rellenar)
-  - What I checked myself: (a rellenar)
+  - What the AI ran: the implementation is present in the commit above. No Gemini build output or emulator-execution log is stored with this entry.
+  - What I checked myself: The original note records that git status showed only CameraScreen.kt, PhotoStorage.kt and AndroidManifest.xml, and the manifest diff contained only the CAMERA permission line. On the emulator the permission dialog appeared; allowing it showed the live preview. Capturing a photo showed the filename, and Device Explorer contained the JPEG under files/notes/general/. Denying permission showed the explanation and both buttons. Rotating the emulator kept the camera working.
 - **Prompt:**
 
   Context: Compose app called LevelMate. CameraScreen.kt in ui/screens/ is an empty screen that only shows its name. Navigation is in ui/navigation/AppNavGraph.kt. CameraX is already in the project dependencies. AndroidManifest.xml has no camera permission yet.
@@ -63,22 +68,20 @@ The form works. One thing I do not like: "Name is required" appears as soon as t
   Done when: I open Camera on the emulator, the permission dialog appears, I allow it and see the preview. I tap the shutter and see the message with the file name. I deny the permission and see the explanation with both buttons.
 
 - **What happened:**
-- **Files touched:** ui/screens/CameraScreen.kt (modified), ui/camera/PhotoStorage.kt (new), AndroidManifest.xml (CAMERA permission line only)
-- **Result:** Accepted as proposed (commit message: VP-03 Camera with permission).
-- **How I checked it:**
-  - What the AI ran: [confirma: Gemini only created and edited the files; it did not build or run the app on the emulator]
-  - What I checked myself: git status showed only CameraScreen.kt, PhotoStorage.kt and AndroidManifest.xml, and git diff of the manifest showed only the CAMERA permission line. On the emulator the permission dialog appeared, I allowed it and saw the live preview. I tapped the shutter and saw the message with the file name. In Device Explorer the .jpg was in files/notes/general/. With the permission denied, the screen showed the explanation with the two buttons (ask again and open settings). I rotated the emulator and the camera kept working.
+
+CameraX preview, permission handling, internal JPEG storage and the denied-permission actions were added. The original entry records acceptance. Later integration connected photos to Room and project detail; those later edits are recorded separately in Sofia's logbook.
 
 ## VP-04
 
 - **Date and time:** 2026-11-15 13:35
 - **Author:** Victoria
 - **Tool:** Gemini Agent (Gemini 3.6 Flash), new chat
-- **Files touched:** (a rellenar después)
-- **Result:** (a rellenar después)
+- **Files touched:** `app/src/main/java/com/example/notesbysubject/ui/camera/LevelCalculator.kt`, `app/src/main/java/com/example/notesbysubject/ui/camera/LevelIndicator.kt`, `app/src/main/java/com/example/notesbysubject/ui/screens/CameraScreen.kt`
+- **Result:** accepted; the existing entry records acceptance without changes.
+- **Commit:** [0e0d1c6](https://github.com/victoriapico-creator/levelMate/commit/0e0d1c6)
 - **How I checked it:**
-  - What the AI ran: (a rellenar)
-  - What I checked myself: (a rellenar)
+  - What the AI ran: the implementation is present in the commit above. No Gemini build output or emulator-execution log is stored with this entry.
+  - What I checked myself: The original note records that git status showed the three expected files. In Camera, moving the virtual phone through Virtual sensors → Device pose changed the angle and tilted the indicator. The indicator was green when upright and orange when tilted. Taking a photo still worked, and leaving and reopening Camera did not crash.
 - **Prompt:**
 
   Context: Compose app called LevelMate. CameraScreen.kt in ui/screens/ shows the CameraX preview and a shutter button. Photo saving is in ui/camera/PhotoStorage.kt and must keep working.
@@ -88,23 +91,20 @@ The form works. One thing I do not like: "Name is required" appears as soon as t
   Done when: On the emulator, I open Camera and move the virtual phone in the extended controls (Virtual sensors). The angle changes and the indicator tilts. It is green within 1.5 degrees and orange outside. I can still take a photo.
 
 - **What happened:**
-- **Files touched:** ui/screens/CameraScreen.kt (modified), ui/camera/LevelCalculator.kt (new), ui/camera/LevelIndicator.kt (new)
-- **Result:** Accepted as proposed (commit message: VP-04 Level with accelerometer).
-- **How I checked it:**
-  - What the AI ran: [confirma: Gemini only created and edited the files; it did not run the app on the emulator]
-  - What I checked myself: git status showed only those three files. On the emulator I opened Camera and moved the virtual phone in Virtual sensors, Device pose. The angle changed and the indicator tilted. It was green when the phone was straight and orange when it was tilted. I could still take a photo, and leaving and re-entering Camera did not crash.
-- **What happened:** It worked on the first try, with no changes by hand.
+
+The accelerometer calculation, smoothing and level indicator were added without changing photo storage or navigation. The original note states that it worked on the first try with no changes by hand. The tolerance was later connected to DataStore during integration.
 
 ## VP-05
 
 - **Date and time:** 2026-11-15 13:50
 - **Author:** Victoria
 - **Tool:** Gemini Agent (Gemini 3.6 Flash), new chat
-- **Files touched:** (a rellenar después)
-- **Result:** (a rellenar después)
+- **Files touched:** `app/src/main/java/com/example/notesbysubject/ui/camera/RecognizedTextFilter.kt`, `app/src/main/java/com/example/notesbysubject/ui/camera/ScanResultSheet.kt`, `app/src/main/java/com/example/notesbysubject/ui/camera/TextScanner.kt`, `app/src/main/java/com/example/notesbysubject/ui/screens/CameraScreen.kt`
+- **Result:** accepted; the existing entry records acceptance of the text-scanning implementation.
+- **Commit:** [a899748](https://github.com/victoriapico-creator/levelMate/commit/a899748)
 - **How I checked it:**
-  - What the AI ran: (a rellenar)
-  - What I checked myself: (a rellenar)
+  - What the AI ran: the implementation is present in the commit above. No Gemini build output or emulator-execution log is stored with this entry.
+  - What I checked myself: The original note records that git status showed the four expected files with no build-file or version changes. Scanning the virtual scene without text showed the no-text message without crashing. After selecting Webcam0 as the back camera, scanning printed text displayed recognised lines. The shutter and level still worked. A separate blurred/distant-text result was not recorded.
 - **Prompt:**
 
   Context: Compose app called LevelMate. CameraScreen.kt in ui/screens/ shows the CameraX preview, the shutter button and the level. Saving photos is in ui/camera/PhotoStorage.kt and must keep working. The ML Kit Text Recognition library is already in the project dependencies.
@@ -114,9 +114,5 @@ The form works. One thing I do not like: "Name is required" appears as soon as t
   Done when: On the emulator I point the camera at a sheet with printed text, tap Scan and see the sheet with the recognized lines. With a scene with no text I see the "No text found" message. The shutter button and the level still work.
 
 - **What happened:**
-- **Files touched:** ui/screens/CameraScreen.kt (modified), ui/camera/TextScanner.kt, ui/camera/RecognizedTextFilter.kt and ui/camera/ScanResultSheet.kt (new)
-- **Result:** Accepted as proposed (commit message: VP-05 Text scan with ML Kit).
-- **How I checked it:**
-  - What the AI ran: [confirma: Gemini only created and edited the files; it did not run the app on the emulator]
-  - What I checked myself: git status showed only those four files, with no change in build files or versions. On the emulator, with the virtual scene and no text, Scan showed "No text found. Try again with more light." and the app did not crash. After setting the back camera to Webcam0, I pointed it at printed text, tapped Scan and the sheet listed the recognized lines. [confirma: qué pasó con texto borroso o lejano, si lo probaste]. The shutter button and the level still work.
-- **What happened:** [confirma: it worked on the first try, with no changes by hand. Añade cualquier fallo real, por ejemplo si tuviste que configurar la webcam]
+
+The Scan action captures a saved photo, reads its text with the bundled ML Kit library and displays lines meeting the confidence threshold. The existing note records the no-text and readable-text checks. Additional failures, first-try success and hand edits were not recorded, so no outcome is added for those points.
