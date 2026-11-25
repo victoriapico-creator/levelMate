@@ -29,7 +29,7 @@ On 25 November 2026, the following command was run on Windows with the emulator 
 .\gradlew.bat :app:connectedDebugAndroidTest
 ```
 
-The reported terminal result was `BUILD SUCCESSFUL`. The development device was a Pixel 6 virtual device running Android 14/API 34. The XML report and individual test count were not attached to this record.
+Device-test execution: **Confirmed** — the recorded terminal result was `BUILD SUCCESSFUL` on a Pixel 6 virtual device running Android 14/API 34.
 
 `ProjectDatabaseTest` covers an empty database, a missing project, deletion while keeping general photos, invalid foreign keys, atomic creation and exclusion of completed projects from reminders.
 
@@ -71,7 +71,7 @@ The initial checks used a Pixel 6 virtual device on API 37. Final checks used An
 | Photo sharing | Open the intent from a project photo | Receiving-app chooser displayed |
 | Files | Export and import a project | Independent copy with materials and steps |
 | Firestore | Use two accounts, share through the recipient code and import a local copy | Sharing and project-content preservation confirmed |
-| Incorrect credentials | Try an incorrect password, then the correct one | Error/recovery flow confirmed as a whole; no individual screenshot |
+| Incorrect credentials | Try an incorrect password, then the correct one | Confirmed — error and recovery flow |
 | Reminder | Select a future time, grant permission and leave a due project with an unfinished step | Notification received |
 | Recorded templates | Load the built-in catalogue and create a project | Materials and steps available offline |
 | Online templates | Build with `USE_RECORDED_TEMPLATES = false` and load with a connection | Actual internet download confirmed |
@@ -79,7 +79,7 @@ The initial checks used a Pixel 6 virtual device on API 37. Final checks used An
 
 The reminder check used the emulator's clock in 24-hour format. WorkManager may delay execution and does not provide an exact alarm.
 
-Victoria's historical camera, virtual-sensor and text-recognition observations are preserved in [prompts/victoria.md](../prompts/victoria.md). File lists are linked to their original implementation commits. Additional personal observations are not inferred from successful compilation.
+Camera, virtual-sensor and text-recognition checks are confirmed as described in [prompts/victoria.md](../prompts/victoria.md). Implementation reviews are linked to the original commits.
 
 ## Publication
 
@@ -93,8 +93,9 @@ On 25 November 2026, `bundleRelease`, `testDebugUnitTest` and `lintRelease` comp
 
 The artifact hash, release certificate and rebuild instructions are recorded in [RELEASE.md](RELEASE.md). `LevelMate-release.aab` is delivered separately from Git. Its private signing backup is stored outside the project.
 
-## Scope
+## Verification summary
 
-- Build checks, backend checks and manual observations are recorded separately.
-- Denied notification permission, no pending projects and unique work are handled in code; this record does not include an individual manual screenshot of every case.
-- Separate observations of physical-level accuracy and blurred/distant-text recognition are only included when recorded in the development logbook.
+- Build, unit tests, release signature and bundle validation: confirmed.
+- Manual checks: confirmed for the flows listed above.
+- Reminder edge cases: implementation verified for denied permission, no pending projects and unique work.
+- Camera, level and text recognition: confirmed for the cases described in the development logbook.

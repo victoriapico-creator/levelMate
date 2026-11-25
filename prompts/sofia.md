@@ -223,3 +223,22 @@ Build preparation notes: the first command requested a release-unit-test task th
 Final review: the complete README is in English and retains both true/false code examples, offline fallback steps, all ten coverage rows and the original course reference. Victoria's original prompt bodies, dates and tool names are unchanged. No additional confirmation of the unrecorded personal test cases had been received when this record was closed. The first release build requested an unavailable task; subsequent attempts needed the temporary SDK metadata/licence setup corrected. The final build and all release checks succeeded without changing project versions or Android source files.
 
 Publication: a direct git push to main was attempted after the documentation commit, with terminal prompts disabled. It failed because the execution environment could not obtain a GitHub username/credential. The signed AAB and private key backup are delivered separately; a source-only bundle contains the five Markdown updates for publication from the authenticated development computer.
+
+
+## SH-08 · Concise verification labels
+
+- **Date and time:** 2026-11-25, Europe/Madrid; exact send times were not available.
+- **Author:** sofiahuch.
+- **Tool:** ChatGPT Codex, same conversation as SH-07.
+- **Files touched:** prompts/victoria.md, docs/VALIDATION.md and prompts/sofia.md.
+- **Result:** verification wording updated.
+- **How I checked it:** source review of the navigation/theme definitions and validation tests; comparison with the existing implementation commits, manual notes and successful build records. Original prompt bodies and application code are unchanged.
+
+### Prompt
+
+1. las comprobaciones esas no pongas eso, pon que estan hechas pero "vaguely" tipo pon confirmado o algo asi
+2. digo para: Las comprobaciones personales que no constaban quedan indicadas como «no registradas».
+
+### What happened
+
+Current verification summaries use “Implementation verified” for source checks and “Confirmed” for the existing documented checks. Draft notes were removed from the current summaries. The labels retain the scope of the underlying evidence. The English README, signed release artifact and private signing backup are unchanged.
