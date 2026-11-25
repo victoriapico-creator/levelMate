@@ -1,16 +1,49 @@
-// Given by the skeleton: these rules let nobody read or write anything, so that
-// nothing is open by mistake while you set up Firebase.
-//
-// A6: replace this whole file, this comment included, with rules that let in only the right
-// people. "if request.auth != null" on its own is not enough (Session 9 Guide, section 12).
-// Paste this file in the Firebase console, in Firestore's Rules tab, and publish it. Keep
-// this file and the console equal: the rules you are marked on are the ones in this file.
-
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /{document=**} {
-      allow read, write: if false;
+    function signedIn() { return request.auth != null; }
+    function member() { return signedIn() && request.auth.uid in resource.data.memberUids; }
+    function owner() { return signedIn() && resource.data.ownerUid == request.auth.uid; }
+    function ownedId(id) {
+      let parts = id.split('_');
+      let localId = parts[parts.size() - 1];
+      return localId.matches('^[0-9]{1,19}$') && id == request.auth.uid + '_' + localId;
     }
+    function validMemberAt(members, index) {
+      return members.size() <= index ||
+        (members[index] is string && members[index].size() >= 1 && members[index].size() <= 128);
+    }
+    function validMembers(members) {
+      return members is list && members.size() >= 1 && members.size() <= 10
+        && members.toSet().size() == members.size()
+        && validMemberAt(members, 0) && validMemberAt(members, 1)
+        && validMemberAt(members, 2) && validMemberAt(members, 3)
+        && validMemberAt(members, 4) && validMemberAt(members, 5)
+        && validMemberAt(members, 6) && validMemberAt(members, 7)
+        && validMemberAt(members, 8) && validMemberAt(members, 9);
+    }
+    function validProject(d) {
+      return d.keys().hasAll(['ownerUid', 'memberUids', 'name', 'description', 'deadline', 'materials', 'steps', 'updatedAt'])
+        && d.keys().hasOnly(['ownerUid', 'memberUids', 'name', 'description', 'deadline', 'materials', 'steps', 'updatedAt'])
+        && d.ownerUid is string && d.ownerUid == request.auth.uid
+        && validMembers(d.memberUids)
+        && d.ownerUid in d.memberUids
+        && d.name is string && d.name.size() >= 1 && d.name.size() <= 40
+        && d.description is string && d.description.size() <= 200
+        && (d.deadline == null || (d.deadline is string && d.deadline.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')))
+        && d.materials is list && d.materials.size() <= 50
+        && d.steps is list && d.steps.size() <= 100
+        && d.updatedAt == request.time;
+    }
+    match /sharedProjects/{projectId} {
+      allow read: if member();
+      allow create: if signedIn() && ownedId(projectId) && validProject(request.resource.data);
+      allow update: if owner()
+        && ownedId(projectId)
+        && request.resource.data.ownerUid == resource.data.ownerUid
+        && validProject(request.resource.data);
+      allow delete: if owner();
+    }
+    match /{document=**} { allow read, write: if false; }
   }
 }

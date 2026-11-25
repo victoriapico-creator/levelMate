@@ -24,3 +24,9 @@ local.properties
 keystore.properties
 # The signed bundle goes to Canvas, not to the repository.
 *.aab
+
+# Local Firebase emulator output
+.firebase/
+firestore-debug.log
+firebase-debug.log
+ui-debug.log

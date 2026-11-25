@@ -3,10 +3,14 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.ksp)
-    // A6: remove the two slashes once app/google-services.json is in place (see section 11
-    // of the skeleton's document).
-    // Without that file, this line stops the build.
-    // alias(libs.plugins.google.services)
+    // The Google Services plugin already declared at the root is applied below
+    // only when app/google-services.json is present.
+}
+
+// The existing Firebase plugin is activated only when the real Android configuration exists.
+// Plugin versions and the version catalog are unchanged.
+if (file("google-services.json").isFile) {
+    apply(plugin = "com.google.gms.google-services")
 }
 
 android {

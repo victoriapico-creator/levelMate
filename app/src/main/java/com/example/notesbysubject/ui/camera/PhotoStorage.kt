@@ -9,14 +9,13 @@ import java.util.Locale
 
 object PhotoStorage {
 
-    fun createPhotoFile(context: Context): File {
-        val notesDir = File(context.filesDir, "notes/general")
-        if (!notesDir.exists()) {
-            notesDir.mkdirs()
-        }
+    fun createPhotoFile(context: Context, projectId: Long? = null): File {
+        require(projectId == null || projectId > 0) { "Invalid project id" }
+        val folder = projectId?.let { "notes/projects/$it" } ?: "notes/general"
+        val notesDir = File(context.filesDir, folder)
+        check(notesDir.isDirectory || notesDir.mkdirs()) { "Could not create the photo folder" }
         val timestamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
-        val fileName = "photo_$timestamp.jpg"
-        return File(notesDir, fileName)
+        return File.createTempFile("photo_${timestamp}_", ".jpg", notesDir)
     }
 
     fun createOutputFileOptions(photoFile: File): ImageCapture.OutputFileOptions {

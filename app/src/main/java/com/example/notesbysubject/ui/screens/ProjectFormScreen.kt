@@ -11,6 +11,9 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.notesbysubject.ui.ProjectActionsViewModel
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -22,8 +25,17 @@ import com.example.notesbysubject.ui.components.ProjectFormFields
 @Composable
 fun ProjectFormScreen(
     modifier: Modifier = Modifier,
-    onSaveClick: () -> Unit = {}
+    onSaveClick: () -> Unit = {},
+    onProjectSaved: (Long) -> Unit = {}
 ) {
+    val actions: ProjectActionsViewModel = viewModel()
+    LaunchedEffect(actions.savedProjectId) {
+        actions.savedProjectId?.let {
+            actions.consumeSavedProject()
+            onSaveClick()
+            onProjectSaved(it)
+        }
+    }
     var name by rememberSaveable { mutableStateOf("") }
     var description by rememberSaveable { mutableStateOf("") }
     var deadline by rememberSaveable { mutableStateOf("") }
@@ -42,7 +54,7 @@ fun ProjectFormScreen(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Text(
-            text = "ProjectForm",
+            text = "New project",
             style = MaterialTheme.typography.headlineMedium
         )
 
@@ -60,12 +72,13 @@ fun ProjectFormScreen(
         )
 
         Button(
-            onClick = onSaveClick,
-            enabled = isFormValid,
+            onClick = { actions.create(name, description, deadline) },
+            enabled = isFormValid && !actions.busy,
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Save")
+            Text(if (actions.busy) "Saving…" else "Save")
         }
+        actions.message?.let { Text(it, color = MaterialTheme.colorScheme.error) }
     }
 }
 

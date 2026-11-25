@@ -39,6 +39,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -55,8 +56,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.example.notesbysubject.ui.camera.LevelIndicator
+import com.example.notesbysubject.appContainer
+import com.example.notesbysubject.data.settings.AppSettings
 import com.example.notesbysubject.ui.camera.PhotoStorage
 import com.example.notesbysubject.ui.camera.ScanResultSheet
 import com.example.notesbysubject.ui.camera.ScanState
@@ -66,10 +71,14 @@ import com.example.notesbysubject.ui.camera.calculateTiltAngle
 import com.example.notesbysubject.ui.camera.filterRecognizedLines
 import com.example.notesbysubject.ui.camera.isWithinTolerance
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import java.io.File
 
 @Composable
 fun CameraScreen(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    projectId: Long? = null
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -89,6 +98,16 @@ fun CameraScreen(
         hasPermission = isGranted
     }
 
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                hasPermission = ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
+
     LaunchedEffect(Unit) {
         if (!hasPermission) {
             permissionLauncher.launch(Manifest.permission.CAMERA)
@@ -99,6 +118,7 @@ fun CameraScreen(
         CameraPreviewContent(
             context = context,
             lifecycleOwner = lifecycleOwner,
+            projectId = projectId,
             modifier = modifier
         )
     } else {
@@ -122,12 +142,14 @@ fun CameraScreen(
 private fun CameraPreviewContent(
     context: Context,
     lifecycleOwner: LifecycleOwner,
+    projectId: Long?,
     modifier: Modifier = Modifier
 ) {
     val imageCapture = remember { ImageCapture.Builder().build() }
     var savedMessage by remember { mutableStateOf<String?>(null) }
     var scanState by remember { mutableStateOf<ScanState?>(null) }
     val scope = rememberCoroutineScope()
+    var capturing by remember { mutableStateOf(false) }
 
     val sensorManager = remember {
         context.getSystemService(Context.SENSOR_SERVICE) as? SensorManager
@@ -137,9 +159,10 @@ private fun CameraPreviewContent(
     }
 
     var currentAngle by remember { mutableFloatStateOf(0f) }
-    var isLevel by remember { mutableStateOf(true) }
+    val settings by context.appContainer.settings.settings.collectAsState(initial = AppSettings())
+    val isLevel = isWithinTolerance(currentAngle, settings.levelTolerance)
 
-    DisposableEffect(sensorManager, accelerometer) {
+    DisposableEffect(sensorManager, accelerometer, lifecycleOwner) {
         if (sensorManager == null || accelerometer == null) {
             onDispose { }
         } else {
@@ -159,20 +182,30 @@ private fun CameraPreviewContent(
                             smoothedAngle = applyLowPassFilter(rawAngle, smoothedAngle)
                         }
                         currentAngle = smoothedAngle
-                        isLevel = isWithinTolerance(smoothedAngle)
                     }
                 }
 
                 override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
             }
 
-            sensorManager.registerListener(
-                listener,
-                accelerometer,
-                SensorManager.SENSOR_DELAY_UI
-            )
-
+            var registered = false
+            fun register() {
+                if (!registered) {
+                    sensorManager.registerListener(listener, accelerometer, SensorManager.SENSOR_DELAY_UI)
+                    registered = true
+                }
+            }
+            val observer = LifecycleEventObserver { _, event ->
+                when (event) {
+                    Lifecycle.Event.ON_RESUME -> register()
+                    Lifecycle.Event.ON_PAUSE -> { sensorManager.unregisterListener(listener); registered = false }
+                    else -> Unit
+                }
+            }
+            lifecycleOwner.lifecycle.addObserver(observer)
+            if (lifecycleOwner.lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) register()
             onDispose {
+                lifecycleOwner.lifecycle.removeObserver(observer)
                 sensorManager.unregisterListener(listener)
             }
         }
@@ -241,20 +274,30 @@ private fun CameraPreviewContent(
         ) {
             // Shutter Button
             IconButton(
-                onClick = {
-                    val photoFile = PhotoStorage.createPhotoFile(context)
+                enabled = !capturing,
+                onClick = capture@{
+                    val photoFile = try { PhotoStorage.createPhotoFile(context, projectId) }
+                    catch (_: Exception) {
+                        Toast.makeText(context, "Could not create a photo file. Check available storage.", Toast.LENGTH_LONG).show()
+                        return@capture
+                    }
+                    capturing = true
                     val outputOptions = PhotoStorage.createOutputFileOptions(photoFile)
                     imageCapture.takePicture(
                         outputOptions,
                         ContextCompat.getMainExecutor(context),
                         object : ImageCapture.OnImageSavedCallback {
                             override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
+                                capturing = false
+                                registerPhoto(context, photoFile, projectId)
                                 val msg = "Saved ${photoFile.name}"
                                 savedMessage = msg
                                 Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
                             }
 
                             override fun onError(exception: ImageCaptureException) {
+                                capturing = false
+                                photoFile.delete()
                                 Toast.makeText(
                                     context,
                                     "Error taking photo: ${exception.message}",
@@ -278,15 +321,23 @@ private fun CameraPreviewContent(
 
             // Scan Button
             Button(
-                onClick = {
+                enabled = !capturing,
+                onClick = scan@{
+                    val photoFile = try { PhotoStorage.createPhotoFile(context, projectId) }
+                    catch (_: Exception) {
+                        scanState = ScanState.Error
+                        return@scan
+                    }
+                    capturing = true
                     scanState = ScanState.Loading
-                    val photoFile = PhotoStorage.createPhotoFile(context)
                     val outputOptions = PhotoStorage.createOutputFileOptions(photoFile)
                     imageCapture.takePicture(
                         outputOptions,
                         ContextCompat.getMainExecutor(context),
                         object : ImageCapture.OnImageSavedCallback {
                             override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
+                                capturing = false
+                                registerPhoto(context, photoFile, projectId)
                                 val msg = "Saved ${photoFile.name}"
                                 savedMessage = msg
                                 Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
@@ -311,6 +362,8 @@ private fun CameraPreviewContent(
                             }
 
                             override fun onError(exception: ImageCaptureException) {
+                                capturing = false
+                                photoFile.delete()
                                 scanState = ScanState.Error
                                 Toast.makeText(
                                     context,
@@ -403,4 +456,16 @@ fun Camera(
     modifier: Modifier = Modifier
 ) {
     CameraScreen(modifier = modifier)
+}
+
+private fun registerPhoto(context: Context, photo: File, projectId: Long?) {
+    val app = context.appContainer
+    app.applicationScope.launch {
+        try { app.projects.addPhoto(photo, projectId, app.notesDirectory) }
+        catch (_: Exception) {
+            withContext(Dispatchers.Main) {
+                Toast.makeText(context, "Photo saved. Reload saved photos to add it to the list.", Toast.LENGTH_LONG).show()
+            }
+        }
+    }
 }
