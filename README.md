@@ -1,111 +1,185 @@
-# LevelMate · Android Studio y Firebase
+# LevelMate
 
-App Android en Kotlin y Jetpack Compose. Paquete: `com.example.notesbysubject`. Los proyectos, materiales, pasos y fotos se guardan en Room, y los ajustes en DataStore. Authentication y Firestore permiten compartir los datos del proyecto con otras personas. También se conserva la alternativa de compartir archivos sin cuentas.
+Aplicación Android en Kotlin y Jetpack Compose para organizar proyectos de taller. Permite guardar materiales, pasos y fotos, consultar plantillas, ajustar el nivel de la cámara y recibir recordatorios. Los proyectos se guardan en Room; la hora del recordatorio y la tolerancia del nivel, en DataStore. Authentication y Firestore permiten compartir planes entre cuentas.
 
 ## Abrir y ejecutar
 
-1. Abre la carpeta del proyecto en Android Studio: debe contener `settings.gradle.kts`, `app` y `gradlew.bat`. En la entrega anterior de Windows se llama `LevelMate-final`.
-2. Sincroniza Gradle conservando las versiones existentes: SDK 37 y JVM 25. Ignora las sugerencias de actualizar Kotlin o AGP.
-3. Selecciona un teléfono o emulador Android API 26 o superior y pulsa Run. Para comprobar el permiso de notificaciones utiliza API 33 o superior.
-4. `app/google-services.json` ya corresponde al proyecto real LevelMate. El plugin Google Services que ya estaba declarado se aplica cuando encuentra ese archivo. No hace falta instalar un complemento de Firebase en ChatGPT ni en Android Studio para ejecutar la app.
+1. Abre en Android Studio la carpeta que contiene `settings.gradle.kts`, `app` y `gradlew.bat`.
+2. Sincroniza Gradle con las versiones del repositorio: SDK 37 y JVM 25.
+3. En Device Manager, inicia un teléfono o emulador con Android API 26 o superior. Las pruebas de notificaciones se realizaron en un Pixel 6 virtual con Android 14/API 34.
+4. Selecciona la configuración **app**, el dispositivo y pulsa **Run**.
 
-## Firebase configurado
+El paquete es `com.example.notesbysubject`. La configuración de Firebase está en `app/google-services.json` y el plugin Google Services se aplica al encontrar ese archivo. Se mantienen las versiones originales de dependencias, plugins y wrapper.
 
-| Dato | Valor |
+## Firebase
+
+| Configuración | Valor |
 |---|---|
 | Proyecto | LevelMate |
 | ID | `levelmate-56e8c` |
-| Plan | Spark, sin cuenta de facturación vinculada |
+| Plan | Spark, sin facturación vinculada |
 | App Android | `com.example.notesbysubject` |
-| Inicio de sesión | Correo electrónico y contraseña |
+| Authentication | Correo electrónico y contraseña |
 | Firestore | Standard, base `(default)`, región `europe-southwest1` (Madrid) |
-| Seguridad | Creada en modo producción; reglas privadas publicadas desde `firestore.rules` |
+| Reglas | Base creada en producción; acceso limitado a propietario y participantes |
 
-La configuración Android está en `app/google-services.json`. Contiene los identificadores públicos del cliente Firebase; no contiene una contraseña, clave privada ni cuenta de servicio. Nunca añadas credenciales de administración, contraseñas de usuarios o claves de firma al repositorio. Las fotos permanecen en el teléfono y se comparten mediante intents; no se utiliza Firebase Storage ni Blaze.
+La configuración Android contiene los identificadores públicos del cliente. Las contraseñas, cuentas de servicio y claves privadas de firma se mantienen fuera del repositorio. Las fotos se guardan en el dispositivo y se comparten mediante intents; la app utiliza Spark y no requiere Firebase Storage.
 
 - [Configuración de la app Android](https://console.firebase.google.com/project/levelmate-56e8c/settings/general/android:com.example.notesbysubject)
 - [Proveedor de acceso](https://console.firebase.google.com/project/levelmate-56e8c/authentication/providers)
 - [Reglas de Firestore](https://console.firebase.google.com/project/levelmate-56e8c/firestore/databases/-default-/security/rules)
 
-## Compartir con otra persona (A6)
+## Uso de la aplicación
 
-1. Abre **Share / import projects → With people**.
-2. Escribe tu correo y una contraseña de al menos 6 caracteres. Pulsa **Create account** la primera vez; posteriormente usa **Sign in**. No uses tu contraseña de Google: esta es una cuenta propia de LevelMate.
-3. La otra persona también crea su cuenta en LevelMate. Copia el código que aparece en **Your sharing code** usando **Copy your code** y te lo pasa.
-4. Selecciona uno de tus proyectos, introduce su código en **Other person's sharing code** y pulsa **Share / update shared copy**.
-5. La otra persona verá el proyecto en su lista de compartidos. Puede consultar materiales, pasos y fecha, o pulsar **Save as a local project** para guardar una copia independiente en Room.
-6. Para publicar cambios posteriores, vuelve a compartir el mismo proyecto. Se conservan los participantes existentes, hasta 10 en total. Solo el propietario modifica o retira la copia de Firestore.
-7. **Stop sharing** pide confirmación y retira la copia compartida; las copias locales que ya guardaron los participantes permanecen.
+- **New project:** crea un proyecto con nombre, descripción y fecha opcional. El nombre admite hasta 40 caracteres y la descripción, hasta 200. La fecha se introduce como `dd/MM/yyyy`.
+- **Projects:** abre el detalle de un proyecto para editarlo, añadir materiales con cantidades y unidades, marcar pasos o asociar fotos.
+- **Camera:** muestra la cámara, el nivel y el botón **Scan** para leer texto de una captura.
+- **General photos:** muestra las fotos sin proyecto y permite recuperar capturas anteriores. Al borrar un proyecto, sus fotos pasan a esta lista.
+- **Settings:** guarda la hora en formato de 24 horas, el estado del recordatorio y la tolerancia del nivel entre 0,1 y 15 grados.
+- **Share / import projects:** permite compartir con otra cuenta o intercambiar un archivo JSON.
 
-No se envían fotos ni rutas privadas a Firestore. Sin conexión se identifica la lista guardada en caché y los errores son recuperables. Cambiar de cuenta elimina de la pantalla los datos de la cuenta anterior. El resto de funciones locales no requiere iniciar sesión.
+### Compartir con otra cuenta
 
-## Compartir mediante archivos
+1. Entra en **Share / import projects → With people**. Usa **Create account** para registrar un correo y una contraseña de al menos 6 caracteres; después, **Sign in** para acceder.
+2. La cuenta destinataria debe iniciar sesión y copiar su código con **Copy your code**.
+3. En la cuenta propietaria, selecciona el proyecto, pega ese código en **Other person's sharing code** y pulsa **Share / update shared copy**.
+4. En la cuenta destinataria, consulta materiales, pasos y fecha. **Save as a local project** guarda una copia independiente en Room.
 
-En **Share / import projects → Project files**, selecciona un proyecto y usa **Share project file** o **Save project file**. El archivo contiene nombre, descripción, fecha, materiales y pasos con su estado. Las fotos se comparten por separado desde el detalle.
+Cada proyecto admite hasta 10 participantes, incluido su propietario. Para publicar cambios posteriores se vuelve a compartir el mismo proyecto. **Stop sharing** retira la copia de Firestore y solicita confirmación; las copias locales importadas permanecen. Las fotos se comparten por separado desde el detalle.
 
-**Choose project file** permite revisar el archivo antes de **Import as a new project**. Cada importación genera identificadores nuevos; cancelar no cambia Room. Se validan formato, versión, UTF-8, fechas, cantidades, tamaño máximo de 256 KB, hasta 50 materiales y 100 pasos. Un archivo inválido no crea un proyecto parcial.
+### Compartir mediante archivos
 
-## Otras funciones
+En **Share / import projects → Project files**, selecciona un proyecto y utiliza **Share project file** o **Save project file**. **Choose project file** permite revisar un JSON antes de pulsar **Import as a new project**. Cada importación genera identificadores nuevos.
 
-- **New project:** nombre, descripción y fecha opcional. El detalle permite editar, añadir materiales con unidades, marcar pasos y tomar o adjuntar fotos.
-- **General photos:** fotos sin proyecto y recuperación de capturas anteriores a Room. Borrar un proyecto conserva sus fotos como generales.
-- **Settings:** hora, activación del recordatorio y tolerancia del nivel entre 0,1 y 15 grados. Android decide el momento exacto de WorkManager, por lo que la notificación puede llegar tarde.
+Se comprueban la versión, UTF-8, las fechas y los límites de tamaño: 256 KB por archivo, 50 materiales y 100 pasos. Un archivo inválido no crea un proyecto parcial. El JSON incluye nombre, descripción, fecha, materiales y pasos con su estado; las fotos se envían aparte.
 
-Para probar el recordatorio, deja un proyecto con fecha de hoy o anterior y al menos un paso pendiente. Guarda una hora futura en formato de 24 horas usando el reloj del emulador: a medianoche `00:45` es distinto de `12:45`. El aviso aparece en el panel de notificaciones de Android; el canal normal no exige una ventana emergente. La persona confirmó su recepción en el nuevo Pixel 6 virtual con Android 14/API 34.
+## Plantillas: modo grabado, internet y prueba sin conexión
 
-## Llamada real o grabada (A5)
-
-En `data/templates/TemplateRepository.kt` se cambia una sola línea:
+Abre [TemplateRepository.kt](app/src/main/java/com/example/notesbysubject/data/templates/TemplateRepository.kt). La constante está al principio del archivo, antes de `interface TemplateApi`. Cambia el valor de esa misma línea:
 
 ```kotlin
 const val USE_RECORDED_TEMPLATES = true
 ```
 
-- `true`: utiliza `app/src/main/assets/recorded/project_templates.json`, sin red. Es el modo inicial de la entrega.
-- `false`: utiliza Retrofit para leer `docs/templates.json` de la rama `codex/levelmate-local` publicada en GitHub. Si fallan la red, HTTP, JSON o la versión, muestra un aviso y utiliza la copia grabada.
-
-El JSON está publicado en [la rama de entrega](https://raw.githubusercontent.com/victoriapico-creator/levelMate/codex/levelmate-local/docs/templates.json). Se verificó HTTP 200, versión 1 y tres plantillas. La persona confirmó en el emulador tanto la carga por internet como el aviso de fallback y la creación desde la copia incluida sin conexión. Ambas copias del catálogo son idénticas y utilizan el mismo parser con `ignoreUnknownKeys = true` y el `httpClient` original.
-
-## Cobertura y casos incómodos
-
-| Fila | Implementación | Caso incómodo |
+| Valor | Origen de las plantillas | Mensaje en la pantalla |
 |---|---|---|
-| A2 | Lista, detalle, edición e intent para compartir foto | Lista vacía, foto desaparecida o receptor ausente |
-| A3 | Hora del recordatorio y tolerancia en DataStore | `25:00` y tolerancias fuera de 0,1–15 rechazadas |
-| A4 | Room: proyectos, materiales, pasos y fotos con relaciones | Fecha nula, clave foránea inválida y transacción sin datos parciales |
-| A5 | Plantillas Retrofit, JSON publicado y copia en assets | Sin red o JSON inválido activa la copia grabada |
-| A6 | Login, Firestore y permisos por propietario/participantes; archivos como alternativa | Credenciales inválidas, sin red, lista vacía y usuario ajeno sin acceso |
-| A7 | Trabajo diario único y notificación de proyectos pendientes | Sin permiso o sin pendientes no notifica; no duplica trabajos |
-| A8–A10 existentes | Cámara, nivel configurable y reconocimiento ML Kit | Permiso denegado, ausencia de acelerómetro o texto no reconocido |
+| `true` | `app/src/main/assets/recorded/project_templates.json` | `Built-in templates` |
+| `false`, con conexión | JSON publicado, descargado mediante Retrofit | `Templates loaded from the internet` |
+| `false`, si falla la descarga | Copia incluida en assets | `Online templates unavailable. Showing the built-in copy.` |
 
-Las cantidades incluyen unidades. Room guarda las fechas en ISO `yyyy-MM-dd`; el formulario utiliza `dd/MM/yyyy`. Los pasos conservan su posición y estado.
+El modo inicial del repositorio es `true`. El catálogo remoto está en [docs/templates.json de la rama codex/levelmate-local](https://raw.githubusercontent.com/victoriapico-creator/levelMate/codex/levelmate-local/docs/templates.json). Esa rama debe conservarse mientras se utilice esta dirección. El archivo remoto y la copia de assets tienen el mismo contenido: versión 1 y tres plantillas. Ambos modos usan el mismo parser con `ignoreUnknownKeys = true` y el cliente HTTP del proyecto.
 
-## Validación y registro
+### Prueba del modo grabado
 
-Consulta [docs/VALIDATION.md](docs/VALIDATION.md) y [prompts/sofia.md](prompts/sofia.md), entradas SH-04 y SH-05. Se distinguen las pruebas automáticas de los recorridos que ha confirmado la persona en el emulador.
+1. Guarda la constante con `true` y pulsa **Run** para instalar la compilación actualizada.
+2. En la pantalla principal, pulsa **Load templates**. Debe aparecer **Built-in templates**.
+3. Selecciona **Use template**. El proyecto debe abrirse con sus materiales y pasos.
 
-Desde la terminal de Android Studio en Windows:
+### Prueba de la descarga por internet
+
+Sustituye el valor de la constante por `false`:
+
+```kotlin
+const val USE_RECORDED_TEMPLATES = false
+```
+
+Guarda el archivo, pulsa **Run**, mantén la conexión a internet y vuelve a pulsar **Load templates**. Debe aparecer **Templates loaded from the internet** y la lista de plantillas. Selecciona una para comprobar que crea el proyecto.
+
+### Prueba sin conexión
+
+Mantén `false` en la compilación instalada. Activa el modo avión del emulador y apaga también su Wi-Fi. Vuelve a **Load templates**: debe aparecer el aviso de la copia incluida y deben poder crearse proyectos desde las plantillas. Los errores de red, HTTP, formato JSON o versión utilizan este mismo fallback.
+
+Para dejar la app en el modo inicial de entrega, vuelve a poner `true`, guarda y pulsa **Run**.
+
+## Pruebas de las demás funciones
+
+| Apartado | Pasos | Resultado esperado |
+|---|---|---|
+| Formulario | Deja el nombre vacío e introduce `31/02/2026` como fecha. Después usa un nombre y una fecha válidos. | Los datos inválidos muestran errores y deshabilitan **Save**; los válidos permiten guardar. |
+| Proyectos y Room | Crea un proyecto, añade `Madera · 2 tablas`, un paso y una foto. Marca el paso, detén la app y vuelve a abrirla. | El proyecto, el material, el estado del paso y la foto se conservan. |
+| Edición y borrado | Modifica el proyecto y guarda. Prueba **Delete project** con una copia de prueba. | Los cambios se guardan; el borrado pide confirmación y las fotos quedan en **General photos**. |
+| Ajustes | Guarda `18:30` y tolerancia `2`, vuelve a entrar en Settings y prueba después `25:00`. | Los valores válidos persisten y la hora inválida deshabilita **Save settings**. |
+| Compartir foto | Abre una foto del detalle y pulsa **Share photo**. | Android abre el selector de aplicaciones receptoras con permiso temporal para leer la imagen. |
+| Compartir archivo | Exporta un proyecto, selecciónalo con **Choose project file** e impórtalo. | Se crea una copia independiente con materiales, pasos y sus estados. |
+| Authentication y Firestore | Usa dos cuentas, comparte un proyecto con el código destinatario y guarda una copia local desde esa cuenta. Prueba también una contraseña incorrecta. | El destinatario recibe el proyecto; el acceso incorrecto muestra un error recuperable. |
+| Cámara | Concede el permiso, toma una foto y prueba también denegarlo. | La foto se guarda; con el permiso denegado se muestra la explicación y los botones para solicitarlo o abrir ajustes. |
+| Nivel | En la cámara, mueve el dispositivo o usa **Extended Controls → Virtual sensors**. Cambia la tolerancia en Settings. | El ángulo y el color del nivel responden al movimiento y a la tolerancia guardada. |
+| Lectura de texto | Enfoca una página legible y pulsa **Scan**. Repite con una imagen sin texto o poco clara. | Se muestra el texto reconocido o el aviso correspondiente cuando no hay texto suficiente. |
+
+La tabla describe cómo repetir las pruebas. Los resultados registrados y el alcance de las comprobaciones están en [docs/VALIDATION.md](docs/VALIDATION.md).
+
+### Probar el recordatorio
+
+1. Crea un proyecto con fecha de hoy o anterior y deja al menos un paso sin marcar.
+2. En **Settings**, activa **Daily deadline reminder** y concede el permiso de notificaciones.
+3. Mira el reloj del emulador y guarda una hora futura en formato de 24 horas. Por ejemplo, si son las `00:40`, puedes elegir `00:45`.
+4. Vuelve a la pantalla de inicio del emulador y mantenlo encendido. Comprueba el panel de notificaciones de Android.
+
+WorkManager permite a Android elegir el momento de ejecución, por lo que el aviso puede retrasarse. Los proyectos sin fecha, con fecha futura o con todos sus pasos terminados quedan fuera del recordatorio. Sin permiso de notificaciones no se publica el aviso. Se utiliza un trabajo diario único para evitar duplicados.
+
+### Pruebas automáticas
+
+En la terminal del proyecto, con el JDK configurado:
 
 ```powershell
 .\gradlew.bat :app:testDebugUnitTest :app:assembleDebug :app:lintDebug
+```
+
+Con un emulador o teléfono conectado:
+
+```powershell
 .\gradlew.bat :app:connectedDebugAndroidTest
 ```
 
-Las pruebas instrumentadas necesitan un dispositivo. Las reglas se comprueban con Firebase CLI y el emulador local, sin tocar la base real:
+El resultado de ejecución se comprueba al final de la terminal. Los informes se generan en `app/build/reports/`. La ejecución de `connectedDebugAndroidTest` del 25/11/2026 terminó con `BUILD SUCCESSFUL`.
+
+Si la terminal indica que `JAVA_HOME` no está configurado, mantén Android Studio abierto y ejecuta este bloque en PowerShell:
+
+```powershell
+$studioExe = (Get-Process studio64 | Select-Object -First 1).Path
+$javaStudio = Join-Path (Split-Path (Split-Path $studioExe -Parent) -Parent) "jbr"
+$env:JAVA_HOME = $javaStudio
+.\gradlew.bat :app:connectedDebugAndroidTest
+```
+
+Las reglas de Firestore se comprueban con Firebase CLI contra el emulador local de demostración:
 
 ```shell
 firebase emulators:exec --only firestore --project demo-levelmate "node scripts/check-firestore-rules.mjs"
 ```
 
-El catálogo de versiones, los plugins raíz y el wrapper conservan sus versiones. `AppNavGraph.kt` no se modifica en SH-04 ni en SH-05; la opción de Firebase se integra dentro de la pantalla existente de compartir.
+## Cobertura y casos incómodos
 
-## Release (C2)
+Las rutas de la tabla parten de `app/src/main/java/com/example/notesbysubject/`.
 
-El APK de desarrollo es debug. No se ha generado una release firmada ni una clave de firma; C2 queda fuera de estas seis tareas. Las claves de firma permanecen fuera del repositorio.
+| Fila | Función | Archivos principales | Pantalla | Caso incómodo |
+|---|---|---|---|---|
+| A1 | Navegación y formulario con validación y estado | `ui/navigation/AppNavGraph.kt`, `ui/screens/ProjectFormScreen.kt`, `ui/screens/ProjectFormValidation.kt` | Projects, New project | Nombre vacío, fecha inválida y rotación del dispositivo |
+| A2 | Lista, detalle, edición y envío de fotos con intent | `ui/screens/ProjectsScreen.kt`, `ui/screens/ProjectDetailScreen.kt`, `ui/photos/PhotoSharing.kt` | Projects, detalle | Lista vacía, proyecto eliminado o foto desaparecida |
+| A3 | Ajustes persistentes de hora y tolerancia | `data/settings/SettingsRepository.kt`, `ui/screens/SettingsScreen.kt` | Settings, Camera | Hora inválida y tolerancia fuera de 0,1–15 grados |
+| A4 | Proyectos, materiales, pasos y fotos relacionados en Room | `data/local/Entities.kt`, `data/local/ProjectDao.kt`, `data/local/ProjectRepository.kt` | Projects, detalle | Fecha nula, clave foránea inválida y creación sin datos parciales |
+| A5 | Plantillas por Retrofit o assets | `data/templates/TemplateRepository.kt`, `data/templates/ProjectTemplate.kt` | Project templates | Sin red, error HTTP o catálogo incompatible: fallback a assets |
+| A6 | Acceso y proyectos compartidos en Firestore | `data/sharing/SharingRepository.kt`, `ui/CloudSharingViewModel.kt`, `ui/screens/CloudSharingScreen.kt` | With people | Credenciales inválidas, caché sin red y rechazo de usuarios ajenos |
+| A7 | Recordatorio diario con WorkManager y notificación | `reminders/ReminderScheduler.kt`, `reminders/ReminderWorker.kt` | Settings, notificaciones | Permiso denegado, ausencia de pendientes y prevención de trabajos duplicados |
+| A8 | Cámara y fotos guardadas en almacenamiento interno | `ui/screens/CameraScreen.kt`, `ui/camera/PhotoStorage.kt` | Camera, detalle | Permiso denegado o almacenamiento no disponible |
+| A9 | Nivel con acelerómetro y tolerancia configurable | `ui/camera/LevelCalculator.kt`, `ui/camera/LevelIndicator.kt`, `ui/screens/CameraScreen.kt` | Camera | Acelerómetro ausente y retirada del listener al pausar |
+| A10 | Lectura de texto de una foto con ML Kit | `ui/camera/TextScanner.kt`, `ui/camera/RecognizedTextFilter.kt`, `ui/camera/ScanResultSheet.kt` | Camera, Scan | Imagen sin texto, confianza insuficiente o error de lectura |
 
-## Referencia original del esqueleto
+## Decisiones de diseño
 
-El apartado siguiente se conserva sin cambios como referencia del curso. La implementación de LevelMate aplica el intercambio de Firestore a proyectos con materiales y pasos.
+1. Room guarda los proyectos y sus relaciones en el dispositivo para que el trabajo local pueda continuar sin conexión. La creación desde plantillas o archivos se hace en una transacción para evitar datos parciales.
+2. Las fotos permanecen en `filesDir/notes/` y se comparten con FileProvider y un permiso temporal de lectura. Así se mantiene el almacenamiento local y el uso de Firebase Spark.
+3. Las plantillas remotas y grabadas tienen el mismo formato y parser. La copia de assets permite utilizar la función cuando falla la descarga.
+
+## Validación y registro
+
+[docs/VALIDATION.md](docs/VALIDATION.md) recoge los resultados de compilación, tests, backend y recorridos de la app. Los registros de desarrollo están en [prompts/sofia.md](prompts/sofia.md) y [prompts/victoria.md](prompts/victoria.md).
+
+## Release firmada (C2)
+
+La compilación de desarrollo genera un APK debug. El bundle `.aab` firmado de C2 está pendiente; debe generarse con **Build → Generate Signed Bundle / APK → Android App Bundle**. La clave de firma se guarda fuera del repositorio. El `.aab` firmado se entrega por el canal indicado en el enunciado.
+
+## Referencia del curso
 
 ## Facts you cannot guess
 

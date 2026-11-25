@@ -1,88 +1,93 @@
-# Validación de LevelMate con Firebase
+# Validación de LevelMate
 
-Implementación y pruebas automáticas SH-04 del 24/11/2026; cierre de pruebas manuales SH-05 del 25/11/2026. La persona pidió recuperar la A6 original después de probar la variante local. Esta entrega conserva también el intercambio mediante archivos.
+## Compilación y pruebas automáticas
 
-## Comprobaciones automáticas de Android
-
-Se ejecutaron con las versiones existentes y el `app/google-services.json` real:
-
-```text
-:app:testDebugUnitTest :app:assembleDebug :app:lintDebug :app:assembleDebugAndroidTest
-BUILD SUCCESSFUL
-```
+Resultados de la compilación con Firebase del 24/11/2026, utilizando las versiones del repositorio y la configuración Android real:
 
 | Comprobación | Resultado |
 |---|---|
-| Pruebas unitarias | 37 correctas, 0 fallos, 0 errores, 0 omitidas; 8 suites |
-| APK debug | Compilado correctamente con Authentication y Firestore |
-| Google Services | `processDebugGoogleServices` completada con la configuración Android real |
-| Lint | 0 errores; 13 advertencias y 3 sugerencias no bloqueantes |
-| APK instrumentado | Compilado; no ejecutado en un dispositivo desde este entorno |
-| Versiones y plugins raíz | Catálogo, wrapper y declaraciones raíz conservados respecto al esqueleto |
-| Navegación | `AppNavGraph.kt` conservado respecto a la entrega local SH-03 |
+| Pruebas unitarias | 37 correctas, 0 fallos, 0 errores y 0 omitidas; 8 suites |
+| APK debug | Compilado con Authentication y Firestore |
+| Google Services | `processDebugGoogleServices` completada |
+| Lint | 0 errores, 13 advertencias y 3 sugerencias |
+| APK instrumentado | Compilado correctamente |
+| Versiones | Catálogo, plugins raíz y wrapper conservados respecto al esqueleto |
 
-Se usaron SDK 37.0, Build Tools 36.0.0 y JVM 25 en herramientas temporales externas al repositorio. Los ajustes de red, certificados y cachés de este entorno no se incorporan al proyecto.
+Comando de compilación y comprobación:
 
-Las 37 pruebas incluyen validación de proyectos/materiales/pasos, cálculos del nivel, ajustes, horario de recordatorios, plantillas reales/grabadas, 13 pruebas de archivos y 6 pruebas de serialización/validación de proyectos compartidos. Los datos compartidos excluyen fotos, rutas privadas e identificadores locales de las entidades relacionadas. Las pruebas de Room que necesitan Android están en el APK instrumentado; compilarlas no equivale a ejecutarlas.
+```powershell
+.\gradlew.bat :app:testDebugUnitTest :app:assembleDebug :app:lintDebug :app:assembleDebugAndroidTest
+```
 
-## Backend real configurado
+La compilación utilizó SDK 37, Build Tools 36.0.0 y JVM 25. Las 37 pruebas incluyen validación de proyectos, ajustes, cálculo del nivel, horario de recordatorios, plantillas, 13 casos de intercambio por archivos y 6 de proyectos compartidos.
 
-- Proyecto: **LevelMate**, ID `levelmate-56e8c`, plan **Spark** sin facturación vinculada.
-- App Android: `com.example.notesbysubject`; configuración descargada por la persona y validada antes de copiarla a `app/google-services.json`.
-- Authentication: correo y contraseña habilitado.
-- Firestore: edición Standard, base `(default)`, región `europe-southwest1` (Madrid), creada en **modo producción**.
-- Reglas de `firestore.rules` publicadas y verificadas en la consola. Acceso por propietario/participantes; el resto de rutas se deniega.
-- No se utiliza Firebase Storage, Blaze ni una cuenta de servicio.
+### Pruebas en el dispositivo
 
-### Reglas con emulador
+El 25/11/2026 se ejecutó en Windows, con el emulador abierto:
 
-`firebase emulators:exec --only firestore --project demo-levelmate "node scripts/check-firestore-rules.mjs"` completó **21 comprobaciones**. El script se niega a ejecutarse fuera de localhost y del proyecto de demostración.
+```powershell
+.\gradlew.bat :app:connectedDebugAndroidTest
+```
 
-Incluye primera publicación sin leer un documento todavía inexistente, creación/actualización con arrayUnion y máscara equivalente a `SetOptions.merge()`, conservación de participantes, máximo de 10 personas, exclusión del propietario inválida, duplicados y tipos inválidos, rechazo de rutas de fotos/campos inesperados, prohibición de apropiarse del espacio de documentos de otro usuario, lecturas limitadas a miembros, consulta filtrada permitida, consulta general denegada, modificación/borrado exclusivo del propietario y rechazo de acceso anónimo/ajeno.
+El resultado final comunicado fue `BUILD SUCCESSFUL`. La ejecución se realizó en el equipo de desarrollo con un Pixel 6 virtual Android 14/API 34; el informe XML y el recuento individual de resultados no están adjuntos a este registro.
 
-### Prueba contra los servicios reales
+La clase `ProjectDatabaseTest` comprueba la base vacía, el proyecto inexistente, el borrado con conservación de fotos generales, el rechazo de claves foráneas inválidas, la creación sin datos parciales y la exclusión de proyectos terminados del recordatorio.
 
-Pasaron **9 comprobaciones mediante HTTPS REST**: alta de dos cuentas temporales, inicio de sesión correcto, rechazo de contraseña incorrecta, publicación por el propietario, lectura por destinatario, rechazo de acceso anónimo, rechazo de edición por destinatario y consulta de pertenencia válida.
+## Firebase
 
-El documento temporal y ambas cuentas se eliminaron al terminar; las tres operaciones de limpieza devolvieron HTTP 200. Las contraseñas y tokens se generaron o recibieron solo en memoria y no forman parte del código, logbook ni entrega. Esta prueba comprueba el backend y las reglas reales; no se presenta como una prueba visual de la pantalla Android.
-
-## Pruebas que ha confirmado la persona
-
-En el Pixel 6 virtual API 37 de su Android Studio, antes de SH-04:
-
-| Recorrido | Resultado comunicado |
+| Configuración | Valor comprobado |
 |---|---|
-| Arranque de LevelMate | Funciona tras un Cold Boot del emulador; hubo bloqueos iniciales de Pixel Launcher/System UI |
-| Proyecto `Test`, descripción y fecha | Creado y abierto en el detalle |
-| Material `Madera · 2 tablas` | Guardado y visible |
-| Paso `pegar tablas` marcado | Estado conservado al detener y volver a ejecutar |
-| Foto del proyecto | Capturada con la escena virtual y conservada al volver a ejecutar |
-| Ajustes | Hora 18:30 y tolerancia 2 persistentes; 25:00 rechazada |
-| Plantillas grabadas | Carga y creación de un proyecto con materiales/pasos correctas |
-| Compartir foto | Menú de aplicaciones receptoras abierto |
-| Archivo de proyecto | Exportación e importación como copia independiente con materiales y pasos |
+| Proyecto | `levelmate-56e8c` |
+| Plan | Spark, sin facturación vinculada |
+| App Android | `com.example.notesbysubject` |
+| Authentication | Correo electrónico y contraseña |
+| Firestore | Standard, base `(default)`, región `europe-southwest1`, creada en producción |
+| Reglas | `firestore.rules` publicadas, con acceso por propietario y participantes |
 
-## Cierre manual confirmado el 25/11/2026
+`app/google-services.json` contiene la configuración Android del proyecto. Las fotos permanecen en el dispositivo; no se utiliza Firebase Storage.
 
-Tras bloqueos del sistema del antiguo emulador antes de ejecutar la app, la persona creó otro Pixel 6 virtual con Android 14/API 34 y confirmó que funcionaba. Estas son sus comprobaciones comunicadas en la conversación; no se presentan como tests instrumentados ejecutados por Codex.
+### Reglas y servicios
 
-| Fila | Recorrido confirmado por la persona | Resultado |
+| Prueba | Resultado | Cobertura |
 |---|---|---|
-| A6 | Crear e iniciar sesión con dos cuentas, compartir un proyecto con el código de la segunda cuenta y guardar una copia local | La persona confirmó que el intercambio y la copia conservan los datos del proyecto |
-| A6, caso incómodo | El recorrido guiado incluyó intentar entrar con contraseña incorrecta y recuperar el acceso con la correcta | La persona confirmó el recorrido en conjunto; no se dispone de captura individual de cada resultado |
-| A7 | Guardar una hora futura, con permisos y recordatorio activados, en un proyecto con fecha de hoy y un paso pendiente | La persona confirmó que recibió la notificación |
-| A5 | Cambiar una línea a modo real y pulsar Load templates con conexión | La persona confirmó la carga desde internet |
-| A5, caso incómodo | Modo avión y Wi-Fi apagado, volver a cargar y crear desde una plantilla | La persona confirmó el fallback a la copia de assets y el funcionamiento sin conexión |
+| Emulador local de Firestore | 21 comprobaciones correctas | Publicación con `arrayUnion`, conservación y límite de participantes, propietario, consulta filtrada, rechazo de campos inesperados, accesos anónimos y usuarios ajenos |
+| Servicios reales mediante HTTPS REST | 9 comprobaciones correctas | Alta y acceso de dos cuentas temporales, contraseña incorrecta, publicación, lectura del destinatario y permisos |
 
-En la primera comprobación de A7, la captura mostraba `18:05` como hora elegida cuando el emulador estaba alrededor de `00:40`. Se explicó la diferencia entre el campo de hora programada y el reloj actual en formato de 24 horas. Después de guardar una hora futura, la persona comunicó que el aviso había llegado. No hizo falta modificar el código del recordatorio.
+El documento y las dos cuentas temporales se eliminaron al terminar, con HTTP 200 en las tres operaciones. Los tokens y contraseñas de prueba se mantuvieron en memoria y no forman parte del repositorio.
 
-La persona publicó la rama con Git desde su ordenador. Codex verificó que `codex/levelmate-local` contiene la actualización Firebase y que el endpoint público devuelve HTTP 200 con versión 1 y tres plantillas. El JSON coincide con la grabación incluida. El modo predeterminado del repositorio es `USE_RECORDED_TEMPLATES = true`; para el recorrido real se cambia únicamente ese valor.
+El script `scripts/check-firestore-rules.mjs` solo admite localhost y el proyecto de demostración `demo-levelmate`.
 
-## Estado de la entrega y límites
+## Pruebas manuales
 
-- A4, A3, A5, A2, A7 y A6 están implementadas en `codex/levelmate-local`; Firebase está configurado en Spark y Firestore en producción. La rama incluye el `app/google-services.json` real y el JSON público de plantillas.
-- Las pruebas automáticas del 24/11/2026 y las comprobaciones manuales comunicadas el 25/11/2026 se mantienen diferenciadas. El cierre SH-05 solo actualiza README, validación y logbook; no cambia código, dependencias, plugins ni navegación y no repite la compilación Android.
-- Los casos de notificaciones denegadas, ausencia de proyectos pendientes y ausencia de duplicados están contemplados en la implementación. No se afirma aquí una prueba manual nueva e individual de cada uno.
-- Las pruebas instrumentadas de Room están compiladas, pero no se han ejecutado desde este entorno. Tampoco se afirma una nueva prueba física del nivel o de la calidad del OCR.
-- La integración de la rama en `main` corresponde a la revisión del cambio; publicar la rama no la incorpora automáticamente a la principal.
-- El APK es debug. La release firmada C2 queda fuera de estas seis tareas y no se presenta como completada.
+Recorridos comprobados durante el desarrollo. Las primeras pruebas se hicieron con un Pixel 6 virtual API 37 y las pruebas finales con Android 14/API 34.
+
+| Función | Comprobación | Resultado |
+|---|---|---|
+| Proyecto | Crear `Test`, introducir descripción y fecha y abrir el detalle | Datos visibles en el detalle |
+| Materiales | Añadir `Madera · 2 tablas` | Material y cantidad guardados |
+| Pasos | Marcar un paso y detener/abrir la app | Estado conservado |
+| Fotos | Tomar una captura y detener/abrir la app | Foto guardada y visible |
+| Ajustes | Guardar hora 18:30 y tolerancia 2; probar 25:00 | Persistencia de valores válidos y rechazo de la hora inválida |
+| Compartir foto | Abrir el intent desde una foto del detalle | Selector de aplicaciones receptoras abierto |
+| Archivos | Exportar e importar un proyecto | Copia independiente con materiales y pasos |
+| Firestore | Usar dos cuentas, compartir con el código destinatario e importar una copia local | Intercambio y conservación del contenido correctos |
+| Acceso incorrecto | Probar contraseña incorrecta y después la correcta | Recorrido de error y recuperación confirmado en conjunto; sin captura individual |
+| Recordatorio | Elegir una hora futura, conceder permiso y dejar un proyecto vencido con un paso pendiente | Notificación recibida |
+| Plantillas grabadas | Cargar el catálogo incluido y crear un proyecto | Materiales y pasos disponibles sin red |
+| Plantillas por internet | Compilar con `USE_RECORDED_TEMPLATES = false` y cargar con conexión | Descarga real confirmada |
+| Fallback de plantillas | Mantener `false`, activar modo avión y apagar Wi-Fi | Aviso de la copia incluida y creación de proyecto sin conexión |
+
+En la prueba del recordatorio se utilizó el reloj del emulador en formato de 24 horas. WorkManager puede retrasar el aviso; no funciona como una alarma exacta.
+
+## Publicación
+
+El [pull request #1](https://github.com/victoriapico-creator/levelMate/pull/1) se incorporó a `main` el 25/11/2026. El código de las seis tareas A4, A3, A5, A2, A7 y A6 está integrado en la rama principal.
+
+El [catálogo remoto de plantillas](https://raw.githubusercontent.com/victoriapico-creator/levelMate/codex/levelmate-local/docs/templates.json) devolvió HTTP 200, versión 1 y tres plantillas, con el mismo contenido que la copia de assets. La dirección utiliza `codex/levelmate-local`, por lo que esa rama se conserva. El modo inicial es `USE_RECORDED_TEMPLATES = true`.
+
+## Alcance de la validación
+
+- La compilación automática, las comprobaciones del backend y los recorridos manuales se registran por separado.
+- Los casos de permiso de notificaciones denegado, ausencia de proyectos pendientes y trabajo único están contemplados en el código. Este registro no incluye una captura manual individual de cada caso.
+- La precisión del nivel físico y la calidad del OCR requieren una comprobación visual específica; no se añaden aquí resultados nuevos de esas pruebas.
+- El APK disponible es debug. El bundle `.aab` firmado de C2 sigue pendiente.

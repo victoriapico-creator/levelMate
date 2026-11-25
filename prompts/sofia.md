@@ -162,3 +162,37 @@ Se retiraron las dependencias directas del backend y su aplicación condicional 
 - **Files touched:** README.md, docs/VALIDATION.md, prompts/sofia.md. Sin cambios en código Android, versiones, plugins, Room o AppNavGraph.kt. No se registran contraseñas, tokens, correos de las cuentas de prueba ni claves privadas.
 - **Publication:** la integración GitHub volvió a rechazar la escritura del árbol de documentación con HTTP 403 (Resource not accessible by integration). El cierre queda en un commit y un bundle incremental que parte del commit publicado 3746d9e; se puede incorporar y subir desde el ordenador de la persona. No se presenta como publicado ni integrado en main desde esta sesión.
 - **Limits:** tests instrumentados no ejecutados por Codex, nivel físico/OCR sin nueva verificación y release firmada C2 fuera de alcance. La incorporación a main queda sujeta a la revisión de la rama.
+
+
+## SH-06 · Revisión de la documentación y las pruebas
+
+- **Date and time:** 2026-11-25, Europe/Madrid; hora exacta de envío no disponible.
+- **Author:** sofiahuch.
+- **Tool:** ChatGPT Codex, misma conversación que SH-05.
+- **Files touched:** README.md, docs/VALIDATION.md y prompts/sofia.md.
+- **Result:** accepted with changes; revisión de la documentación y las instrucciones de pruebas.
+- **How I checked it:**
+  - What the AI ran: git pull --ff-only origin main; actualización hasta el merge 74ad52e del PR #1. Revisión de validadores, mensajes de la app, constante de plantillas y archivos de cada fila. Comprobación del diff, enlaces locales, cobertura A1–A10 y conservación literal de Facts you cannot guess. No se repiten compilaciones para este cambio de Markdown.
+  - What I checked myself: las pruebas previas incluyen los recorridos manuales de SH-05; después ejecuté :app:connectedDebugAndroidTest en el emulador y comuniqué BUILD SUCCESSFUL. No se adjuntó el informe XML ni el recuento individual.
+
+### Prompt
+
+Mensajes posteriores a SH-05, en el orden de envío:
+
+1. «vale pues revisemos que este todo»
+2. [Captura de la terminal con JAVA_HOME sin configurar al ejecutar :app:connectedDebugAndroidTest.]
+3. «build succesful»
+4. [Captura del pull request #1 abierto.]
+5. «se supone que ya esta merged: [https://github.com/victoriapico-creator/levelMate/pull/1](https://github.com/victoriapico-creator/levelMate/pull/1)»
+6. «entonces esta todo bien en el github y si lo entrego ahora sera el proyecto entero bien hecho»
+7. «te puedes asegurar de que no haya vocabulario de IA? es decir nada de, "como me mandaste" etc etc, y que en el read me salgan cosas de las pruebas como lo de const val bla bla = true / false para lo del internet, etc etc»
+
+Transcripción recuperada de estos envíos durante el cierre de documentación; los mensajes 2 y 4 fueron imágenes y se describen entre corchetes. La hora exacta no se registra.
+
+### What happened
+
+Se sustituyeron las referencias a la conversación del README y la validación por información de uso, pasos de prueba y resultados. Se explicó la ubicación de USE_RECORDED_TEMPLATES y los tres escenarios: true para assets, false con conexión y false sin red con fallback. Se añadió una fila independiente para cada apartado A1–A10, las rutas de los archivos y tres decisiones de diseño.
+
+Se incorporaron el resultado comunicado de connectedDebugAndroidTest y el merge del PR #1, manteniendo separados los resultados automáticos de los recorridos manuales. El historial de prompts, herramientas y resultados anteriores se conserva. No se modifica el registro de Victoria, el bloque original Facts you cannot guess, el código Android, las versiones ni AppNavGraph.kt. El bundle firmado C2 sigue pendiente.
+
+La publicación directa de esta revisión se intentó mediante la integración GitHub y recibió HTTP 403, Resource not accessible by integration. Se prepara el commit de documentación y un bundle incremental desde 74ad52e para incorporarlo y subirlo desde el equipo de desarrollo.
