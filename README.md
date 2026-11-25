@@ -51,6 +51,8 @@ En **Share / import projects → Project files**, selecciona un proyecto y usa *
 - **General photos:** fotos sin proyecto y recuperación de capturas anteriores a Room. Borrar un proyecto conserva sus fotos como generales.
 - **Settings:** hora, activación del recordatorio y tolerancia del nivel entre 0,1 y 15 grados. Android decide el momento exacto de WorkManager, por lo que la notificación puede llegar tarde.
 
+Para probar el recordatorio, deja un proyecto con fecha de hoy o anterior y al menos un paso pendiente. Guarda una hora futura en formato de 24 horas usando el reloj del emulador: a medianoche `00:45` es distinto de `12:45`. El aviso aparece en el panel de notificaciones de Android; el canal normal no exige una ventana emergente. La persona confirmó su recepción en el nuevo Pixel 6 virtual con Android 14/API 34.
+
 ## Llamada real o grabada (A5)
 
 En `data/templates/TemplateRepository.kt` se cambia una sola línea:
@@ -62,7 +64,7 @@ const val USE_RECORDED_TEMPLATES = true
 - `true`: utiliza `app/src/main/assets/recorded/project_templates.json`, sin red. Es el modo inicial de la entrega.
 - `false`: utiliza Retrofit para leer `docs/templates.json` de la rama `codex/levelmate-local` publicada en GitHub. Si fallan la red, HTTP, JSON o la versión, muestra un aviso y utiliza la copia grabada.
 
-La publicación del JSON remoto depende del push de esa rama. La conexión GitHub de esta sesión rechazó la escritura con 403; no se presenta la ruta remota como publicada mientras ese push siga pendiente. Ambas copias del catálogo son idénticas y utilizan el mismo parser con `ignoreUnknownKeys = true` y el `httpClient` original.
+El JSON está publicado en [la rama de entrega](https://raw.githubusercontent.com/victoriapico-creator/levelMate/codex/levelmate-local/docs/templates.json). Se verificó HTTP 200, versión 1 y tres plantillas. La persona confirmó en el emulador tanto la carga por internet como el aviso de fallback y la creación desde la copia incluida sin conexión. Ambas copias del catálogo son idénticas y utilizan el mismo parser con `ignoreUnknownKeys = true` y el `httpClient` original.
 
 ## Cobertura y casos incómodos
 
@@ -71,7 +73,7 @@ La publicación del JSON remoto depende del push de esa rama. La conexión GitHu
 | A2 | Lista, detalle, edición e intent para compartir foto | Lista vacía, foto desaparecida o receptor ausente |
 | A3 | Hora del recordatorio y tolerancia en DataStore | `25:00` y tolerancias fuera de 0,1–15 rechazadas |
 | A4 | Room: proyectos, materiales, pasos y fotos con relaciones | Fecha nula, clave foránea inválida y transacción sin datos parciales |
-| A5 | Plantillas Retrofit, JSON de publicación y copia en assets | Sin red o JSON inválido activa la copia grabada; push pendiente |
+| A5 | Plantillas Retrofit, JSON publicado y copia en assets | Sin red o JSON inválido activa la copia grabada |
 | A6 | Login, Firestore y permisos por propietario/participantes; archivos como alternativa | Credenciales inválidas, sin red, lista vacía y usuario ajeno sin acceso |
 | A7 | Trabajo diario único y notificación de proyectos pendientes | Sin permiso o sin pendientes no notifica; no duplica trabajos |
 | A8–A10 existentes | Cámara, nivel configurable y reconocimiento ML Kit | Permiso denegado, ausencia de acelerómetro o texto no reconocido |
@@ -80,7 +82,7 @@ Las cantidades incluyen unidades. Room guarda las fechas en ISO `yyyy-MM-dd`; el
 
 ## Validación y registro
 
-Consulta [docs/VALIDATION.md](docs/VALIDATION.md) y [prompts/sofia.md](prompts/sofia.md), entrada SH-04. Se distinguen las pruebas automáticas de los recorridos que ha confirmado la persona en el emulador.
+Consulta [docs/VALIDATION.md](docs/VALIDATION.md) y [prompts/sofia.md](prompts/sofia.md), entradas SH-04 y SH-05. Se distinguen las pruebas automáticas de los recorridos que ha confirmado la persona en el emulador.
 
 Desde la terminal de Android Studio en Windows:
 
@@ -95,7 +97,7 @@ Las pruebas instrumentadas necesitan un dispositivo. Las reglas se comprueban co
 firebase emulators:exec --only firestore --project demo-levelmate "node scripts/check-firestore-rules.mjs"
 ```
 
-El catálogo de versiones, los plugins raíz y el wrapper conservan sus versiones. `AppNavGraph.kt` no se modifica en SH-04; la nueva opción se integra dentro de la pantalla existente de compartir.
+El catálogo de versiones, los plugins raíz y el wrapper conservan sus versiones. `AppNavGraph.kt` no se modifica en SH-04 ni en SH-05; la opción de Firebase se integra dentro de la pantalla existente de compartir.
 
 ## Release (C2)
 

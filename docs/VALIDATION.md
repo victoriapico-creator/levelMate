@@ -1,6 +1,6 @@
 # Validación de LevelMate con Firebase
 
-Actualización SH-04, 24/11/2026. La persona pidió recuperar la A6 original después de probar la variante local. Esta entrega conserva también el intercambio mediante archivos.
+Implementación y pruebas automáticas SH-04 del 24/11/2026; cierre de pruebas manuales SH-05 del 25/11/2026. La persona pidió recuperar la A6 original después de probar la variante local. Esta entrega conserva también el intercambio mediante archivos.
 
 ## Comprobaciones automáticas de Android
 
@@ -62,14 +62,27 @@ En el Pixel 6 virtual API 37 de su Android Studio, antes de SH-04:
 | Compartir foto | Menú de aplicaciones receptoras abierto |
 | Archivo de proyecto | Exportación e importación como copia independiente con materiales y pasos |
 
-No se atribuyen a la persona pruebas manuales de la nueva pantalla Firebase ni la recepción de un recordatorio. El nivel físico y la calidad del OCR tampoco se presentan como pruebas manuales nuevas de SH-04.
+## Cierre manual confirmado el 25/11/2026
 
-## Pendiente de aplicar/publicar y comprobar en el emulador
+Tras bloqueos del sistema del antiguo emulador antes de ejecutar la app, la persona creó otro Pixel 6 virtual con Android 14/API 34 y confirmó que funcionaba. Estas son sus comprobaciones comunicadas en la conversación; no se presentan como tests instrumentados ejecutados por Codex.
 
-1. Actualizar la carpeta existente mediante el bundle de esta entrega, sincronizar Gradle y ejecutar desde Android Studio. No es necesario desinstalar la app ni cambiar la base de Room.
-2. La rama `codex/levelmate-local` no se ha podido publicar desde esta sesión: la integración GitHub respondió 403 y la terminal no dispone de credenciales GitHub. Los cambios y `google-services.json` están en el commit local y en el bundle. El comando `git push -u origin HEAD:codex/levelmate-local` desde el ordenador de la persona publica la rama y el JSON de plantillas.
-3. Comprobar la descarga real de A5 después del push, cambiando solo `USE_RECORDED_TEMPLATES` a `false`. El modo inicial grabado y el fallback están probados automáticamente; la URL sin publicar no se presenta como una llamada real completada.
-4. En la app actualizada, crear/iniciar sesión con dos cuentas y compartir un proyecto. La copia recibida debe poder guardarse como proyecto local independiente; cambiar de cuenta no debe mostrar los compartidos de la anterior.
-5. Probar A7 con permiso concedido, recordatorio activado, hora próxima a la del emulador y un proyecto sin terminar con fecha de hoy o anterior. Volver a Home y mantener el emulador encendido; WorkManager puede retrasarse y no equivale a una alarma exacta. Comprobar también el estado con permiso denegado.
+| Fila | Recorrido confirmado por la persona | Resultado |
+|---|---|---|
+| A6 | Crear e iniciar sesión con dos cuentas, compartir un proyecto con el código de la segunda cuenta y guardar una copia local | La persona confirmó que el intercambio y la copia conservan los datos del proyecto |
+| A6, caso incómodo | El recorrido guiado incluyó intentar entrar con contraseña incorrecta y recuperar el acceso con la correcta | La persona confirmó el recorrido en conjunto; no se dispone de captura individual de cada resultado |
+| A7 | Guardar una hora futura, con permisos y recordatorio activados, en un proyecto con fecha de hoy y un paso pendiente | La persona confirmó que recibió la notificación |
+| A5 | Cambiar una línea a modo real y pulsar Load templates con conexión | La persona confirmó la carga desde internet |
+| A5, caso incómodo | Modo avión y Wi-Fi apagado, volver a cargar y crear desde una plantilla | La persona confirmó el fallback a la copia de assets y el funcionamiento sin conexión |
 
-El APK de esta compilación es debug. La release firmada C2 y la ejecución de tests instrumentados en un dispositivo no se incluyen como completadas.
+En la primera comprobación de A7, la captura mostraba `18:05` como hora elegida cuando el emulador estaba alrededor de `00:40`. Se explicó la diferencia entre el campo de hora programada y el reloj actual en formato de 24 horas. Después de guardar una hora futura, la persona comunicó que el aviso había llegado. No hizo falta modificar el código del recordatorio.
+
+La persona publicó la rama con Git desde su ordenador. Codex verificó que `codex/levelmate-local` contiene la actualización Firebase y que el endpoint público devuelve HTTP 200 con versión 1 y tres plantillas. El JSON coincide con la grabación incluida. El modo predeterminado del repositorio es `USE_RECORDED_TEMPLATES = true`; para el recorrido real se cambia únicamente ese valor.
+
+## Estado de la entrega y límites
+
+- A4, A3, A5, A2, A7 y A6 están implementadas en `codex/levelmate-local`; Firebase está configurado en Spark y Firestore en producción. La rama incluye el `app/google-services.json` real y el JSON público de plantillas.
+- Las pruebas automáticas del 24/11/2026 y las comprobaciones manuales comunicadas el 25/11/2026 se mantienen diferenciadas. El cierre SH-05 solo actualiza README, validación y logbook; no cambia código, dependencias, plugins ni navegación y no repite la compilación Android.
+- Los casos de notificaciones denegadas, ausencia de proyectos pendientes y ausencia de duplicados están contemplados en la implementación. No se afirma aquí una prueba manual nueva e individual de cada uno.
+- Las pruebas instrumentadas de Room están compiladas, pero no se han ejecutado desde este entorno. Tampoco se afirma una nueva prueba física del nivel o de la calidad del OCR.
+- La integración de la rama en `main` corresponde a la revisión del cambio; publicar la rama no la incorpora automáticamente a la principal.
+- El APK es debug. La release firmada C2 queda fuera de estas seis tareas y no se presenta como completada.
